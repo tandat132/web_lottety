@@ -1,0 +1,894 @@
+[EB72010203] Found 27 bet records in API response
+[EB72010203] API OrderCodes: [
+  'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  'F5C5CEE8A3224C4F8F3B5FC1E9B7A250'
+]
+[EB72010203] Target OrderCode: "F5C5CEE8A3224C4F8F3B5FC1E9B7A250"
+[EB72010203] Normalized target: "F5C5CEE8A3224C4F8F3B5FC1E9B7A250"
+[EB72010203] Found match: {
+  apiOrderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  targetOrderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  exactMatch: true,
+  normalizedMatch: true
+}
+[EB72010203] Found match: {
+  apiOrderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  targetOrderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  exactMatch: true,
+  normalizedMatch: true
+}
+[EB72010203] Found match: {
+  apiOrderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  targetOrderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  exactMatch: true,
+  normalizedMatch: true
+}
+[EB72010203] Found match: {
+  apiOrderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  targetOrderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  exactMatch: true,
+  normalizedMatch: true
+}
+[EB72010203] Found match: {
+  apiOrderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  targetOrderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  exactMatch: true,
+  normalizedMatch: true
+}
+[EB72010203] Found match: {
+  apiOrderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  targetOrderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  exactMatch: true,
+  normalizedMatch: true
+}
+[EB72010203] Found match: {
+  apiOrderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  targetOrderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  exactMatch: true,
+  normalizedMatch: true
+}
+[EB72010203] Found match: {
+  apiOrderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  targetOrderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  exactMatch: true,
+  normalizedMatch: true
+}
+[EB72010203] Found match: {
+  apiOrderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  targetOrderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  exactMatch: true,
+  normalizedMatch: true
+}
+[EB72010203] Found match: {
+  apiOrderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  targetOrderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  exactMatch: true,
+  normalizedMatch: true
+}
+[EB72010203] Found match: {
+  apiOrderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  targetOrderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  exactMatch: true,
+  normalizedMatch: true
+}
+[EB72010203] Found match: {
+  apiOrderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  targetOrderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  exactMatch: true,
+  normalizedMatch: true
+}
+[EB72010203] Found match: {
+  apiOrderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  targetOrderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  exactMatch: true,
+  normalizedMatch: true
+}
+[EB72010203] Found match: {
+  apiOrderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  targetOrderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  exactMatch: true,
+  normalizedMatch: true
+}
+[EB72010203] Found match: {
+  apiOrderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  targetOrderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  exactMatch: true,
+  normalizedMatch: true
+}
+[EB72010203] Found match: {
+  apiOrderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  targetOrderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  exactMatch: true,
+  normalizedMatch: true
+}
+[EB72010203] Found match: {
+  apiOrderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  targetOrderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  exactMatch: true,
+  normalizedMatch: true
+}
+[EB72010203] Found match: {
+  apiOrderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  targetOrderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  exactMatch: true,
+  normalizedMatch: true
+}
+[EB72010203] Found match: {
+  apiOrderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  targetOrderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  exactMatch: true,
+  normalizedMatch: true
+}
+[EB72010203] Found match: {
+  apiOrderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  targetOrderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  exactMatch: true,
+  normalizedMatch: true
+}
+[EB72010203] Found match: {
+  apiOrderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  targetOrderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  exactMatch: true,
+  normalizedMatch: true
+}
+[EB72010203] Found match: {
+  apiOrderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  targetOrderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  exactMatch: true,
+  normalizedMatch: true
+}
+[EB72010203] Found match: {
+  apiOrderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  targetOrderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  exactMatch: true,
+  normalizedMatch: true
+}
+[EB72010203] Found match: {
+  apiOrderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  targetOrderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  exactMatch: true,
+  normalizedMatch: true
+}
+[EB72010203] Found match: {
+  apiOrderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  targetOrderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  exactMatch: true,
+  normalizedMatch: true
+}
+[EB72010203] Found match: {
+  apiOrderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  targetOrderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  exactMatch: true,
+  normalizedMatch: true
+}
+[EB72010203] Found match: {
+  apiOrderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  targetOrderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  exactMatch: true,
+  normalizedMatch: true
+}
+[EB72010203] ✅ Found 27 matching records for orderCode "F5C5CEE8A3224C4F8F3B5FC1E9B7A250"
+[EB72010203] Processing record 1: {
+  orderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  numbers: [ '47' ],
+  status: 'LOSS',
+  memberWinLoss: -7.6,
+  stake: 7.6,
+  channels: [ 'danang' ],
+  channelWin: []
+}
+[EB72010203] Processing record 2: {
+  orderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  numbers: [ '46' ],
+  status: 'LOSS',
+  memberWinLoss: -7.6,
+  stake: 7.6,
+  channels: [ 'danang' ],
+  channelWin: []
+}
+[EB72010203] Processing record 3: {
+  orderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  numbers: [ '43' ],
+  status: 'LOSS',
+  memberWinLoss: -7.6,
+  stake: 7.6,
+  channels: [ 'danang' ],
+  channelWin: []
+}
+[EB72010203] Processing record 4: {
+  orderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  numbers: [ '41' ],
+  status: 'LOSS',
+  memberWinLoss: -7.6,
+  stake: 7.6,
+  channels: [ 'danang' ],
+  channelWin: []
+}
+[EB72010203] Processing record 5: {
+  orderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  numbers: [ '40' ],
+  status: 'LOSS',
+  memberWinLoss: -7.6,
+  stake: 7.6,
+  channels: [ 'danang' ],
+  channelWin: []
+}
+[EB72010203] Processing record 6: {
+  orderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  numbers: [ '39' ],
+  status: 'LOSS',
+  memberWinLoss: -7.6,
+  stake: 7.6,
+  channels: [ 'danang' ],
+  channelWin: []
+}
+[EB72010203] Processing record 7: {
+  orderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  numbers: [ '35' ],
+  status: 'LOSS',
+  memberWinLoss: -7.6,
+  stake: 7.6,
+  channels: [ 'danang' ],
+  channelWin: []
+}
+[EB72010203] Processing record 8: {
+  orderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  numbers: [ '33' ],
+  status: 'LOSS',
+  memberWinLoss: -7.6,
+  stake: 7.6,
+  channels: [ 'danang' ],
+  channelWin: []
+}
+[EB72010203] Processing record 9: {
+  orderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  numbers: [ '31' ],
+  status: 'LOSS',
+  memberWinLoss: -7.6,
+  stake: 7.6,
+  channels: [ 'danang' ],
+  channelWin: []
+}
+[EB72010203] Processing record 10: {
+  orderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  numbers: [ '30' ],
+  status: 'LOSS',
+  memberWinLoss: -7.6,
+  stake: 7.6,
+  channels: [ 'danang' ],
+  channelWin: []
+}
+[EB72010203] Processing record 11: {
+  orderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  numbers: [ '28' ],
+  status: 'LOSS',
+  memberWinLoss: -7.6,
+  stake: 7.6,
+  channels: [ 'danang' ],
+  channelWin: []
+}
+[EB72010203] Processing record 12: {
+  orderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  numbers: [ '23' ],
+  status: 'LOSS',
+  memberWinLoss: -7.6,
+  stake: 7.6,
+  channels: [ 'danang' ],
+  channelWin: []
+}
+[EB72010203] Processing record 13: {
+  orderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  numbers: [ '21' ],
+  status: 'LOSS',
+  memberWinLoss: -7.6,
+  stake: 7.6,
+  channels: [ 'danang' ],
+  channelWin: []
+}
+[EB72010203] Processing record 14: {
+  orderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  numbers: [ '20' ],
+  status: 'LOSS',
+  memberWinLoss: -7.6,
+  stake: 7.6,
+  channels: [ 'danang' ],
+  channelWin: []
+}
+[EB72010203] Processing record 15: {
+  orderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  numbers: [ '19' ],
+  status: 'LOSS',
+  memberWinLoss: -7.6,
+  stake: 7.6,
+  channels: [ 'danang' ],
+  channelWin: []
+}
+[EB72010203] Processing record 16: {
+  orderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  numbers: [ '17' ],
+  status: 'LOSS',
+  memberWinLoss: -7.6,
+  stake: 7.6,
+  channels: [ 'danang' ],
+  channelWin: []
+}
+[EB72010203] Processing record 17: {
+  orderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  numbers: [ '15' ],
+  status: 'LOSS',
+  memberWinLoss: -7.6,
+  stake: 7.6,
+  channels: [ 'danang' ],
+  channelWin: []
+}
+[EB72010203] Processing record 18: {
+  orderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  numbers: [ '14' ],
+  status: 'LOSS',
+  memberWinLoss: -7.6,
+  stake: 7.6,
+  channels: [ 'danang' ],
+  channelWin: []
+}
+[EB72010203] Processing record 19: {
+  orderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  numbers: [ '12' ],
+  status: 'LOSS',
+  memberWinLoss: -7.6,
+  stake: 7.6,
+  channels: [ 'danang' ],
+  channelWin: []
+}
+[EB72010203] Processing record 20: {
+  orderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  numbers: [ '11' ],
+  status: 'LOSS',
+  memberWinLoss: -7.6,
+  stake: 7.6,
+  channels: [ 'danang' ],
+  channelWin: []
+}
+[EB72010203] Processing record 21: {
+  orderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  numbers: [ '09' ],
+  status: 'LOSS',
+  memberWinLoss: -7.6,
+  stake: 7.6,
+  channels: [ 'danang' ],
+  channelWin: []
+}
+[EB72010203] Processing record 22: {
+  orderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  numbers: [ '08' ],
+  status: 'LOSS',
+  memberWinLoss: -7.6,
+  stake: 7.6,
+  channels: [ 'danang' ],
+  channelWin: []
+}
+[EB72010203] Processing record 23: {
+  orderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  numbers: [ '07' ],
+  status: 'LOSS',
+  memberWinLoss: -7.6,
+  stake: 7.6,
+  channels: [ 'danang' ],
+  channelWin: []
+}
+[EB72010203] Processing record 24: {
+  orderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  numbers: [ '05' ],
+  status: 'LOSS',
+  memberWinLoss: -7.6,
+  stake: 7.6,
+  channels: [ 'danang' ],
+  channelWin: []
+}
+[EB72010203] Processing record 25: {
+  orderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  numbers: [ '04' ],
+  status: 'LOSS',
+  memberWinLoss: -7.6,
+  stake: 7.6,
+  channels: [ 'danang' ],
+  channelWin: []
+}
+[EB72010203] Processing record 26: {
+  orderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  numbers: [ '02' ],
+  status: 'LOSS',
+  memberWinLoss: -7.7,
+  stake: 7.7,
+  channels: [ 'danang' ],
+  channelWin: []
+}
+[EB72010203] Processing record 27: {
+  orderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  numbers: [ '01' ],
+  status: 'LOSS',
+  memberWinLoss: -7.800000000000001,
+  stake: 7.800000000000001,
+  channels: [ 'danang' ],
+  channelWin: []
+}
+[EB72010203] ✅ Updated result for bet F5C5CEE8A3224C4F8F3B5FC1E9B7A250: {
+  searchedOrderCode: 'F5C5CEE8A3224C4F8F3B5FC1E9B7A250',
+  status: 'LOSS',
+  totalWinLoss: -205.49999999999991,
+  totalStake: 205.49999999999991,
+  recordCount: 27,
+  channelCount: 1
+}
+[EB72010202] Checking results for Sat Jul 26 2025
+[EB72010202] Using proxy: 36.50.175.168:24925
+[EB72010202] API response status: 200
+[EB72010202] SGD666 Results fetched successfully
+[EB72010202] Looking for orderCode: "414B1B8F44644A458A6EEF107ABE83EB" (type: string)
+[EB72010202] Found 27 bet records in API response
+[EB72010202] API OrderCodes: [
+  '414B1B8F44644A458A6EEF107ABE83EB',
+  '414B1B8F44644A458A6EEF107ABE83EB',
+  '414B1B8F44644A458A6EEF107ABE83EB',
+  '414B1B8F44644A458A6EEF107ABE83EB',
+  '414B1B8F44644A458A6EEF107ABE83EB',
+  '414B1B8F44644A458A6EEF107ABE83EB',
+  '414B1B8F44644A458A6EEF107ABE83EB',
+  '414B1B8F44644A458A6EEF107ABE83EB',
+  '414B1B8F44644A458A6EEF107ABE83EB',
+  '414B1B8F44644A458A6EEF107ABE83EB',
+  '414B1B8F44644A458A6EEF107ABE83EB',
+  '414B1B8F44644A458A6EEF107ABE83EB',
+  '414B1B8F44644A458A6EEF107ABE83EB',
+  '414B1B8F44644A458A6EEF107ABE83EB',
+  '414B1B8F44644A458A6EEF107ABE83EB',
+  '414B1B8F44644A458A6EEF107ABE83EB',
+  '414B1B8F44644A458A6EEF107ABE83EB',
+  '414B1B8F44644A458A6EEF107ABE83EB',
+  '414B1B8F44644A458A6EEF107ABE83EB',
+  '414B1B8F44644A458A6EEF107ABE83EB',
+  '414B1B8F44644A458A6EEF107ABE83EB',
+  '414B1B8F44644A458A6EEF107ABE83EB',
+  '414B1B8F44644A458A6EEF107ABE83EB',
+  '414B1B8F44644A458A6EEF107ABE83EB',
+  '414B1B8F44644A458A6EEF107ABE83EB',
+  '414B1B8F44644A458A6EEF107ABE83EB',
+  '414B1B8F44644A458A6EEF107ABE83EB'
+]
+[EB72010202] Target OrderCode: "414B1B8F44644A458A6EEF107ABE83EB"
+[EB72010202] Normalized target: "414B1B8F44644A458A6EEF107ABE83EB"
+[EB72010202] Found match: {
+  apiOrderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  targetOrderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  exactMatch: true,
+  normalizedMatch: true
+}
+[EB72010202] Found match: {
+  apiOrderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  targetOrderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  exactMatch: true,
+  normalizedMatch: true
+}
+[EB72010202] Found match: {
+  apiOrderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  targetOrderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  exactMatch: true,
+  normalizedMatch: true
+}
+[EB72010202] Found match: {
+  apiOrderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  targetOrderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  exactMatch: true,
+  normalizedMatch: true
+}
+[EB72010202] Found match: {
+  apiOrderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  targetOrderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  exactMatch: true,
+  normalizedMatch: true
+}
+[EB72010202] Found match: {
+  apiOrderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  targetOrderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  exactMatch: true,
+  normalizedMatch: true
+}
+[EB72010202] Found match: {
+  apiOrderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  targetOrderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  exactMatch: true,
+  normalizedMatch: true
+}
+[EB72010202] Found match: {
+  apiOrderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  targetOrderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  exactMatch: true,
+  normalizedMatch: true
+}
+[EB72010202] Found match: {
+  apiOrderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  targetOrderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  exactMatch: true,
+  normalizedMatch: true
+}
+[EB72010202] Found match: {
+  apiOrderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  targetOrderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  exactMatch: true,
+  normalizedMatch: true
+}
+[EB72010202] Found match: {
+  apiOrderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  targetOrderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  exactMatch: true,
+  normalizedMatch: true
+}
+[EB72010202] Found match: {
+  apiOrderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  targetOrderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  exactMatch: true,
+  normalizedMatch: true
+}
+[EB72010202] Found match: {
+  apiOrderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  targetOrderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  exactMatch: true,
+  normalizedMatch: true
+}
+[EB72010202] Found match: {
+  apiOrderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  targetOrderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  exactMatch: true,
+  normalizedMatch: true
+}
+[EB72010202] Found match: {
+  apiOrderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  targetOrderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  exactMatch: true,
+  normalizedMatch: true
+}
+[EB72010202] Found match: {
+  apiOrderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  targetOrderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  exactMatch: true,
+  normalizedMatch: true
+}
+[EB72010202] Found match: {
+  apiOrderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  targetOrderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  exactMatch: true,
+  normalizedMatch: true
+}
+[EB72010202] Found match: {
+  apiOrderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  targetOrderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  exactMatch: true,
+  normalizedMatch: true
+}
+[EB72010202] Found match: {
+  apiOrderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  targetOrderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  exactMatch: true,
+  normalizedMatch: true
+}
+[EB72010202] Found match: {
+  apiOrderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  targetOrderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  exactMatch: true,
+  normalizedMatch: true
+}
+[EB72010202] Found match: {
+  apiOrderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  targetOrderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  exactMatch: true,
+  normalizedMatch: true
+}
+[EB72010202] Found match: {
+  apiOrderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  targetOrderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  exactMatch: true,
+  normalizedMatch: true
+}
+[EB72010202] Found match: {
+  apiOrderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  targetOrderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  exactMatch: true,
+  normalizedMatch: true
+}
+[EB72010202] Found match: {
+  apiOrderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  targetOrderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  exactMatch: true,
+  normalizedMatch: true
+}
+[EB72010202] Found match: {
+  apiOrderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  targetOrderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  exactMatch: true,
+  normalizedMatch: true
+}
+[EB72010202] Found match: {
+  apiOrderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  targetOrderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  exactMatch: true,
+  normalizedMatch: true
+}
+[EB72010202] Found match: {
+  apiOrderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  targetOrderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  exactMatch: true,
+  normalizedMatch: true
+}
+[EB72010202] ✅ Found 27 matching records for orderCode "414B1B8F44644A458A6EEF107ABE83EB"
+[EB72010202] Processing record 1: {
+  orderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  numbers: [ '99' ],
+  status: 'LOSS',
+  memberWinLoss: -7.6,
+  stake: 7.6,
+  channels: [ 'danang' ],
+  channelWin: []
+}
+[EB72010202] Processing record 2: {
+  orderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  numbers: [ '94' ],
+  status: 'LOSS',
+  memberWinLoss: -7.6,
+  stake: 7.6,
+  channels: [ 'danang' ],
+  channelWin: []
+}
+[EB72010202] Processing record 3: {
+  orderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  numbers: [ '93' ],
+  status: 'LOSS',
+  memberWinLoss: -7.6,
+  stake: 7.6,
+  channels: [ 'danang' ],
+  channelWin: []
+}
+[EB72010202] Processing record 4: {
+  orderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  numbers: [ '91' ],
+  status: 'LOSS',
+  memberWinLoss: -7.6,
+  stake: 7.6,
+  channels: [ 'danang' ],
+  channelWin: []
+}
+[EB72010202] Processing record 5: {
+  orderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  numbers: [ '88' ],
+  status: 'LOSS',
+  memberWinLoss: -7.6,
+  stake: 7.6,
+  channels: [ 'danang' ],
+  channelWin: []
+}
+[EB72010202] Processing record 6: {
+  orderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  numbers: [ '86' ],
+  status: 'LOSS',
+  memberWinLoss: -7.6,
+  stake: 7.6,
+  channels: [ 'danang' ],
+  channelWin: []
+}
+[EB72010202] Processing record 7: {
+  orderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  numbers: [ '84' ],
+  status: 'LOSS',
+  memberWinLoss: -7.6,
+  stake: 7.6,
+  channels: [ 'danang' ],
+  channelWin: []
+}
+[EB72010202] Processing record 8: {
+  orderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  numbers: [ '82' ],
+  status: 'LOSS',
+  memberWinLoss: -7.6,
+  stake: 7.6,
+  channels: [ 'danang' ],
+  channelWin: []
+}
+[EB72010202] Processing record 9: {
+  orderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  numbers: [ '80' ],
+  status: 'LOSS',
+  memberWinLoss: -7.6,
+  stake: 7.6,
+  channels: [ 'danang' ],
+  channelWin: []
+}
+[EB72010202] Processing record 10: {
+  orderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  numbers: [ '79' ],
+  status: 'LOSS',
+  memberWinLoss: -7.6,
+  stake: 7.6,
+  channels: [ 'danang' ],
+  channelWin: []
+}
+[EB72010202] Processing record 11: {
+  orderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  numbers: [ '78' ],
+  status: 'LOSS',
+  memberWinLoss: -7.6,
+  stake: 7.6,
+  channels: [ 'danang' ],
+  channelWin: []
+}
+[EB72010202] Processing record 12: {
+  orderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  numbers: [ '76' ],
+  status: 'LOSS',
+  memberWinLoss: -7.6,
+  stake: 7.6,
+  channels: [ 'danang' ],
+  channelWin: []
+}
+[EB72010202] Processing record 13: {
+  orderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  numbers: [ '74' ],
+  status: 'LOSS',
+  memberWinLoss: -7.6,
+  stake: 7.6,
+  channels: [ 'danang' ],
+  channelWin: []
+}
+[EB72010202] Processing record 14: {
+  orderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  numbers: [ '73' ],
+  status: 'LOSS',
+  memberWinLoss: -7.6,
+  stake: 7.6,
+  channels: [ 'danang' ],
+  channelWin: []
+}
+[EB72010202] Processing record 15: {
+  orderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  numbers: [ '72' ],
+  status: 'LOSS',
+  memberWinLoss: -7.6,
+  stake: 7.6,
+  channels: [ 'danang' ],
+  channelWin: []
+}
+[EB72010202] Processing record 16: {
+  orderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  numbers: [ '71' ],
+  status: 'LOSS',
+  memberWinLoss: -7.6,
+  stake: 7.6,
+  channels: [ 'danang' ],
+  channelWin: []
+}
+[EB72010202] Processing record 17: {
+  orderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  numbers: [ '70' ],
+  status: 'LOSS',
+  memberWinLoss: -7.6,
+  stake: 7.6,
+  channels: [ 'danang' ],
+  channelWin: []
+}
+[EB72010202] Processing record 18: {
+  orderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  numbers: [ '68' ],
+  status: 'LOSS',
+  memberWinLoss: -7.6,
+  stake: 7.6,
+  channels: [ 'danang' ],
+  channelWin: []
+}
+[EB72010202] Processing record 19: {
+  orderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  numbers: [ '66' ],
+  status: 'LOSS',
+  memberWinLoss: -7.6,
+  stake: 7.6,
+  channels: [ 'danang' ],
+  channelWin: []
+}
+[EB72010202] Processing record 20: {
+  orderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  numbers: [ '64' ],
+  status: 'LOSS',
+  memberWinLoss: -7.6,
+  stake: 7.6,
+  channels: [ 'danang' ],
+  channelWin: []
+}
+[EB72010202] Processing record 21: {
+  orderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  numbers: [ '60' ],
+  status: 'LOSS',
+  memberWinLoss: -7.6,
+  stake: 7.6,
+  channels: [ 'danang' ],
+  channelWin: []
+}
+[EB72010202] Processing record 22: {
+  orderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  numbers: [ '58' ],
+  status: 'LOSS',
+  memberWinLoss: -7.6,
+  stake: 7.6,
+  channels: [ 'danang' ],
+  channelWin: []
+}
+[EB72010202] Processing record 23: {
+  orderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  numbers: [ '56' ],
+  status: 'LOSS',
+  memberWinLoss: -7.6,
+  stake: 7.6,
+  channels: [ 'danang' ],
+  channelWin: []
+}
+[EB72010202] Processing record 24: {
+  orderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  numbers: [ '55' ],
+  status: 'LOSS',
+  memberWinLoss: -7.6,
+  stake: 7.6,
+  channels: [ 'danang' ],
+  channelWin: []
+}
+[EB72010202] Processing record 25: {
+  orderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  numbers: [ '49' ],
+  status: 'LOSS',
+  memberWinLoss: -7.7,
+  stake: 7.7,
+  channels: [ 'danang' ],
+  channelWin: []
+}
+[EB72010202] Processing record 26: {
+  orderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  numbers: [ '48' ],
+  status: 'LOSS',
+  memberWinLoss: -7.800000000000001,
+  stake: 7.800000000000001,
+  channels: [ 'danang' ],
+  channelWin: []
+}
+[EB72010202] Processing record 27: {
+  orderCode: '414B1B8F44644A458A6EEF107ABE83EB',
+  numbers: [ '53' ],
+  status: 'WIN',
+  memberWinLoss: 742.4,
+  stake: 7.6,
+  channels: [ 'danang' ],
+  channelWin: [ 'danang' ]
+}
+[EB72010202] Bet F5C5CEE8A3224C4F8F3B5FC1E9B7A250 already checked
+Result check completed: 1 checked, 1 updated
+Checking results on stats view...
+No bets need result checking
+Result check completed: 0 checked, 0 updated
