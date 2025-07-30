@@ -10,10 +10,11 @@ interface BettingForm {
   numbers: string;
   distributionType: 'equal' | 'random' | 'all';
   betType: string;
-  region: 'south' | 'central' | 'north';
+  region: 'south' | 'central' | 'north' | 'north1' | 'north2';
   stations: string[];
   websiteType: string;
 }
+
 
 const Dashboard: React.FC = () => {
   const [form, setForm] = useState<BettingForm>({
@@ -91,16 +92,14 @@ const Dashboard: React.FC = () => {
           { value: '2d-duoi', label: '🎯 2D đuôi', description: '2D vị trí đuôi' },
           { value: '2d-18lo', label: '🎰 2D 18 lô', description: '2D 18 lô thường' },
           { value: '2d-18lo-dau', label: '🎰⬆️ 2D 18 lô đầu', description: '2D 18 lô vị trí đầu' },
-          { value: '3d-dau', label: '🎲 3D đầu', description: '3D vị trí đầu' },
-          { value: '3d-duoi', label: '🎲 3D đuôi', description: '3D vị trí đuôi' },
-          { value: '3d-17lo', label: '🎰 3D 17 lô', description: '3D 17 lô thường' },
-          { value: '3d-7lo', label: '🎰 3D 7 lô', description: '3D 7 lô thường' }
+          // { value: '3d-dau', label: '🎲 3D đầu', description: '3D vị trí đầu' },
+          // { value: '3d-duoi', label: '🎲 3D đuôi', description: '3D vị trí đuôi' },
+          // { value: '3d-17lo', label: '🎰 3D 17 lô', description: '3D 17 lô thường' },
+          // { value: '3d-7lo', label: '🎰 3D 7 lô', description: '3D 7 lô thường' }
         ];
-      } else if (form.region === 'north') {
+      } else if (form.region === 'north1') {
         return [
-          // MB1
           { value: 'de', label: '🎯 Đề', description: 'Đề thường' },
-          { value: 'de-truot', label: '🎯 Đề trượt', description: 'Đề trượt' },
           { value: 'de-dau', label: '🎯 Đề đầu', description: 'Đề đầu' },
           { value: 'de-giai1', label: '🎯 Đề giải 1', description: 'Đề giải 1' },
           { value: 'de-dau-giai1', label: '🎯 Đề đầu giải 1', description: 'Đề đầu giải 1' },
@@ -108,12 +107,14 @@ const Dashboard: React.FC = () => {
           { value: 'de-dau-than-tai', label: '🎯 Đề đầu thần tài', description: 'Đề đầu thần tài' },
           { value: 'lo-xien', label: '🎰 Lô xiên', description: 'Lô xiên' },
           { value: 'lo-truot', label: '🎰 Lô trượt', description: 'Lô trượt' },
-          { value: 'lo-dau', label: '🎰 Lô đầu', description: 'Lô đầu' },
-          // MB2
-          { value: '2d-dau-mb2', label: '🎯 2D đầu (MB2)', description: '2D đầu MB2' },
-          { value: '3d-dau-mb2', label: '🎲 3D đầu (MB2)', description: '3D đầu MB2' },
-          { value: '3d-duoi-mb2', label: '🎲 3D đuôi (MB2)', description: '3D đuôi MB2' },
-          { value: '3d-23lo-mb2', label: '🎰 3D 23 lô (MB2)', description: '3D 23 lô MB2' }
+          { value: 'lo-dau', label: '🎰 Lô đầu', description: 'Lô đầu' }
+        ];
+      } else if (form.region === 'north2') {
+        return [
+          { value: '2d-dau-mb2', label: '🎯 2D đầu', description: '2D đầu MB2' },
+          // { value: '3d-dau-mb2', label: '🎲 3D đầu', description: '3D đầu MB2' },
+          // { value: '3d-duoi-mb2', label: '🎲 3D đuôi', description: '3D đuôi MB2' },
+          // { value: '3d-23lo-mb2', label: '🎰 3D 23 lô', description: '3D 23 lô MB2' }
         ];
       }
     }
@@ -222,22 +223,37 @@ const Dashboard: React.FC = () => {
     };
 
     // Đối với ONE789 miền Bắc, có cả MB1 và MB2
-    if (form.websiteType === 'one789' && form.region === 'north') {
-      return [
-        { value: 'mb1', label: 'MB1', icon: '🏮' },
-        { value: 'mb2', label: 'MB2', icon: '🏮' }
-      ];
+    if (form.websiteType === 'one789') {
+      if (form.region === 'north1') {
+        return [
+          { value: 'mb1', label: 'MB1', icon: '🏛️' }
+        ];
+      } else if (form.region === 'north2') {
+        return [
+          { value: 'mb2', label: 'MB2', icon: '🏮' }
+        ];
+      }
     }
 
-    return stationsByDay[form.region]?.[dayOfWeek] || [];
+    return stationsByDay[form.region as 'south' | 'central' | 'north']?.[dayOfWeek] || [];
   };
 
-  // Các miền với màu sắc
-  const regions = [
-    { value: 'south', label: 'Miền Nam', color: 'bg-orange-500', icon: '🌴' },
-    { value: 'central', label: 'Miền Trung', color: 'bg-green-500', icon: '🏔️' },
-    { value: 'north', label: 'Miền Bắc', color: 'bg-blue-500', icon: '🏛️' }
-  ];
+  // Hàm lấy danh sách miền theo website
+  const getRegions = () => {
+    if (form.websiteType === 'one789') {
+      return [
+        { value: 'south', label: 'Miền Nam', color: 'bg-orange-500', icon: '🌴' },
+        { value: 'north1', label: 'Miền Bắc 1', color: 'bg-blue-500', icon: '🏛️' },
+        { value: 'north2', label: 'Miền Bắc 2', color: 'bg-indigo-500', icon: '🏮' }
+      ];
+    } else {
+      return [
+        { value: 'south', label: 'Miền Nam', color: 'bg-orange-500', icon: '🌴' },
+        { value: 'central', label: 'Miền Trung', color: 'bg-green-500', icon: '🏔️' },
+        { value: 'north', label: 'Miền Bắc', color: 'bg-blue-500', icon: '🏛️' }
+      ];
+    }
+  };
 
   const getBetTypeMultiplier = (betType: string, numberCount: number): number => {
     switch (betType) {
@@ -321,6 +337,14 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     // Nếu chọn ONE789 và đang ở miền trung, chuyển về miền nam
     if (form.websiteType === 'one789' && form.region === 'central') {
+      setForm(prev => ({ 
+        ...prev, 
+        region: 'south',
+        stations: [], 
+        betType: getBetTypes()[0]?.value || '' 
+      }));
+    } else if (form.websiteType === 'sgd666' && (form.region === 'north1' || form.region === 'north2')) {
+      // Nếu chọn SGD666 và đang ở miền bắc 1 hoặc 2, chuyển về miền nam
       setForm(prev => ({ 
         ...prev, 
         region: 'south',
@@ -428,11 +452,11 @@ const Dashboard: React.FC = () => {
         return;
       }
       
-      if (form.points > 100) {
-        setNotification({ type: 'error', message: '❌ Điểm cần đánh không được vượt quá 100!' });
-        scrollToError('points-input');
-        return;
-      }
+      // if (form.points > 100) {
+      //   setNotification({ type: 'error', message: '❌ Điểm cần đánh không được vượt quá 100!' });
+      //   scrollToError('points-input');
+      //   return;
+      // }
       
       if (!form.numbers.trim()) {
         setNotification({ type: 'error', message: '❌ Vui lòng nhập các đầu số!' });
@@ -772,7 +796,7 @@ const Dashboard: React.FC = () => {
                   🗺️ Chọn miền
                 </label>
                 <div className="grid md:grid-cols-3 gap-3">
-                  {regions.map(region => {
+                  {getRegions().map(region => {
                     const isDisabled = form.websiteType === 'one789' && region.value === 'central';
                     return (
                       <label key={region.value} className={`flex items-center p-3 rounded-lg border-2 cursor-pointer transition-all ${

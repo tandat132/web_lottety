@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const sgd666AuthService = require('../services/sgd666Auth');
-// const one789AuthService = require('../services/one789Auth');
+const one789AuthService = require('../services/one789Auth');
 const proxyService = require('../services/proxyService');
 const Account = require('../models/Account');
 const auth = require('../middleware/auth');
@@ -40,11 +40,7 @@ router.post('/check-multiple', auth, async (req, res) => {
         if (account.websiteType === 'sgd666') {
           result = await sgd666AuthService.checkAccount(account, parsedProxy);
         } else if (account.websiteType === 'one789') {
-          // TODO: Implement one789 service
-          result = {
-            points: 1,
-            fromExistingToken: false
-          };
+          result = await one789AuthService.checkAccount(account, parsedProxy);
         }
 
         return {

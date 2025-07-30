@@ -1,7 +1,8 @@
 const Account = require('../models/Account');
 const BetHistory = require('../models/BetHistory');
 const sgd666AuthService = require('./sgd666Auth');
-const sgd666Utils = require('./sgd666Utils'); // Import utils
+const sgd666Utils = require('./sgd666Utils');
+const one789BettingService = require('./one789BettingService');
 const axios = require('axios');
 const { HttpsProxyAgent } = require('https-proxy-agent');
 const proxyService = require('../services/proxyService');
@@ -9,6 +10,7 @@ const proxyService = require('../services/proxyService');
 class BettingService {
   constructor() {
     this.sgd666Utils = sgd666Utils; // Thêm reference để sử dụng trong class
+    this.one789BettingService = one789BettingService;
   }
   // Hàm wrapper chung cho tất cả SGD666 API calls với auto retry
   async makeSGD666Request(account, requestFunction, isRetry = false) {
@@ -284,6 +286,31 @@ class BettingService {
     }
   }
 
+  // Thêm method executeOne789Betting
+  async executeOne789Betting(account, betData) {
+    try {
+      // Validate dữ liệu ONE789
+      const validationErrors = this.one789BettingService.validateOne789BetData(betData);
+      if (validationErrors.length > 0) {
+        return {
+          success: false,
+          error: 'Validation failed',
+          details: validationErrors.join(', ')
+        };
+      }
+
+      // Thực hiện betting ONE789
+      return await this.one789BettingService.executeOne789Betting(account, betData);
+    } catch (error) {
+      console.error(`[${account.username}] ONE789 betting failed:`, error.message);
+      return {
+        success: false,
+        error: 'ONE789 betting failed',
+        details: error.message
+      };
+    }
+  }
+
   // Thêm hàm lấy thông tin tài khoản SGD666 với auto retry
   async getSGD666AccountInfo(account) {
     const requestFunction = async (authToken) => {
@@ -378,6 +405,8 @@ class BettingService {
     try {
       if (account.websiteType === 'sgd666') {
         return await this.executeSGD666Betting(account, betData);
+      }else if (account.websiteType === 'one789') {
+        return await this.executeOne789Betting(account, betData);
       }
       
       return {
@@ -399,201 +428,274 @@ class BettingService {
     try {
       const { runningAccountsCount, websiteType, distributionType, numbers, numbersArray  } = bettingData;
 
-      // Lấy danh sách tài khoản active
-      const accounts = await Account.find({
+      // Lấy TẤT CẢ tài khoản active (không giới hạn bởi runningAccountsCount)
+      const allActiveAccounts = await Account.find({
         userId: userId,
         websiteType: websiteType,
-        status: 'active' // Chỉ lấy account active, bỏ qua proxy_error
-      }).limit(runningAccountsCount);
+        status: 'active'
+      });
 
-      if (accounts.length === 0) {
+      if (allActiveAccounts.length === 0) {
         return {
           success: false,
           error: 'Không có tài khoản đang hoạt động'
         };
       }
 
-      // Phân phối số theo loại được chọn
+      // Lấy danh sách tài khoản theo runningAccountsCount
+      const initialAccounts = allActiveAccounts.slice(0, runningAccountsCount);
       const originalNumbers = numbersArray || numbers;
-      const numberDistribution = this.distributeNumbers(originalNumbers, accounts, distributionType);
+
+      // Kiểm tra xem có cần retry logic hay không
+      const needsRetryLogic = distributionType === 'equal' || distributionType === 'random';
       
-      // Chỉ lấy những tài khoản có số được phân phối
-      const accountsWithNumbers = accounts.filter(account => 
-        numberDistribution[account._id.toString()] && 
-        numberDistribution[account._id.toString()].length > 0
-      );
-      
-      if (accountsWithNumbers.length === 0) {
-        return {
-          success: false,
-          error: 'Không có tài khoản nào được phân phối số'
-        };
-      }
+      if (needsRetryLogic) {
+        // LOGIC RETRY CHO 'equal' VÀ 'random' - Mỗi tài khoản đánh số khác nhau
+        let remainingNumbers = [...originalNumbers]; // Số còn lại cần đánh
+        let availableAccounts = [...initialAccounts]; // Tài khoản còn khả dụng
+        let usedAccountIds = new Set(); // Theo dõi tài khoản đã sử dụng
+        let allResults = []; // Tất cả kết quả thành công
+        let retryCount = 0;
+        const maxRetries = 5; // Tối đa 5 lần retry
 
-      const BATCH_SIZE = 5; // Xử lý 5 tài khoản cùng lúc
-      const results = [];
+        console.log(`🎯 Bắt đầu betting (${distributionType}): ${remainingNumbers.length} số, ${availableAccounts.length} tài khoản ban đầu`);
 
-      // Xử lý theo batch - CHỈ XỬ LÝ CÁC TÀI KHOẢN CÓ SỐ
-      for (let i = 0; i < accountsWithNumbers.length; i += BATCH_SIZE) {
-        const batch = accountsWithNumbers.slice(i, i + BATCH_SIZE);
-        
-        const batchPromises = batch.map(async (account) => {
-          // Tạo betData riêng cho từng account với số được phân phối
-          const accountBetData = {
-            ...bettingData,
-            numbersArray: numberDistribution[account._id.toString()],
-            numbers: numberDistribution[account._id.toString()].join(', ')
-          };
-          
-          const result = await this.placeBet(account, accountBetData);
-          return {
-            accountId: account._id,
-            username: account.username,
-            assignedNumbers: numberDistribution[account._id.toString()],
-            ...result
-          };
-        });
+        // Vòng lặp retry
+        while (remainingNumbers.length > 0 && retryCount < maxRetries) {
+          retryCount++;
+          console.log(`\n🔄 Lần ${retryCount}: ${remainingNumbers.length} số còn lại, ${availableAccounts.length} tài khoản khả dụng`);
 
-        const batchResults = await Promise.allSettled(batchPromises);
-        
-        batchResults.forEach(result => {
-          if (result.status === 'fulfilled') {
-            results.push(result.value);
-          } else {
-            results.push({
-              status: 'failed',
-              error: 'Promise rejected',
-              details: result.reason?.message || 'Unknown error'
-            });
+          // Nếu không còn tài khoản khả dụng, thử lấy thêm từ danh sách tổng
+          if (availableAccounts.length === 0) {
+            const additionalAccounts = allActiveAccounts.filter(acc => 
+              !usedAccountIds.has(acc._id.toString())
+            );
+            
+            if (additionalAccounts.length === 0) {
+              console.log('❌ Đã hết tài khoản active để thử');
+              break;
+            }
+            
+            availableAccounts = additionalAccounts;
+            console.log(`🔄 Lấy thêm ${additionalAccounts.length} tài khoản từ danh sách tổng`);
           }
-        });
 
-        // Delay giữa các batch
-        if (i + BATCH_SIZE < accountsWithNumbers.length) {
-          await new Promise(resolve => setTimeout(resolve, 1000));
-        }
-      }
-
-      const successCount = results.filter(r => r.success).length;
-      const failCount = results.length - successCount;
-      const proxyErrorCount = results.filter(r => r.error === 'Proxy error').length;
-
-      // Chỉ lưu BetHistory nếu có ít nhất 1 bet thành công
-      let betHistory = null;
-      if (successCount > 0) {
-        try {
-          // Lọc chỉ lấy những tài khoản bet thành công
-          const successfulResults = results.filter(r => r.success);
+          // Phân phối số cho tài khoản khả dụng
+          const numberDistribution = this.distributeNumbers(remainingNumbers, availableAccounts, distributionType);
           
-          // Tạo orderCode từ bet thành công đầu tiên hoặc tạo mới
-          const mainOrderCode = successfulResults.length > 0 && successfulResults[0].orderCode 
-            ? successfulResults[0].orderCode 
-            : BetHistory.generateOrderCode();
+          // Chỉ lấy những tài khoản có số được phân phối
+          const accountsWithNumbers = availableAccounts.filter(account => 
+            numberDistribution[account._id.toString()] && 
+            numberDistribution[account._id.toString()].length > 0
+          );
+          
+          if (accountsWithNumbers.length === 0) {
+            console.log('❌ Không có tài khoản nào được phân phối số');
+            break;
+          }
 
-          // Tính tổng số ban đầu từ tất cả tài khoản thành công
-          const allSuccessfulNumbers = new Set();
-          successfulResults.forEach(result => {
-            result.assignedNumbers.forEach(num => allSuccessfulNumbers.add(num));
-          });
+          const BATCH_SIZE = 5; // Xử lý 5 tài khoản cùng lúc
+          const roundResults = [];
 
-          // Xử lý stations data để đúng format
-          let processedStations = [];
-          if (bettingData.stations) {
-            if (Array.isArray(bettingData.stations)) {
-              processedStations = bettingData.stations.map(station => {
-                if (typeof station === 'string') {
-                  return { value: station, label: station };
-                } else if (station && typeof station === 'object') {
-                  return {
-                    value: station.value || station.label || station,
-                    label: station.label || station.value || station
-                  };
-                }
-                return { value: station, label: station };
-              });
-            } else if (typeof bettingData.stations === 'string') {
-              processedStations = [{ value: bettingData.stations, label: bettingData.stations }];
+          // Xử lý theo batch - CHỈ XỬ LÝ CÁC TÀI KHOẢN CÓ SỐ
+          for (let i = 0; i < accountsWithNumbers.length; i += BATCH_SIZE) {
+            const batch = accountsWithNumbers.slice(i, i + BATCH_SIZE);
+            
+            const batchPromises = batch.map(async (account) => {
+              // Tạo betData riêng cho từng account với số được phân phối
+              const accountBetData = {
+                ...bettingData,
+                numbersArray: numberDistribution[account._id.toString()],
+                numbers: numberDistribution[account._id.toString()].join(', ')
+              };
+              
+              const result = await this.placeBet(account, accountBetData);
+              return {
+                accountId: account._id,
+                username: account.username,
+                assignedNumbers: numberDistribution[account._id.toString()],
+                ...result
+              };
+            });
+
+            const batchResults = await Promise.allSettled(batchPromises);
+            
+            batchResults.forEach(result => {
+              if (result.status === 'fulfilled') {
+                roundResults.push(result.value);
+              } else {
+                roundResults.push({
+                  accountId: null,
+                  username: 'Unknown',
+                  assignedNumbers: [],
+                  success: false,
+                  error: 'Promise rejected',
+                  details: result.reason?.message || 'Unknown error'
+                });
+              }
+            });
+
+            // Delay giữa các batch
+            if (i + BATCH_SIZE < accountsWithNumbers.length) {
+              await new Promise(resolve => setTimeout(resolve, 1000));
             }
           }
 
-          betHistory = new BetHistory({
-            orderCode: mainOrderCode,
-            websiteType: bettingData.websiteType,
-            betType: sgd666Utils.mapBetType(bettingData.betType),
-            betTypeDisplay: bettingData.betType,
-            region: bettingData.region,
-            stations: processedStations, // Sử dụng stations đã được xử lý
-            numbers: Array.from(allSuccessfulNumbers), // Chỉ lưu số từ các bet thành công
-            points: bettingData.points,
-            totalStake: successfulResults.reduce((total, result) => {
-              return total + sgd666Utils.calculateTotalStake(
-                sgd666Utils.mapBetType(bettingData.betType), 
-                result.assignedNumbers.length, 
-                bettingData.points,
-                processedStations.length || 1
-              );
-            }, 0),
-            distributionType: distributionType,
-            userId: userId,
-            // CHỈ LƯU CÁC TÀI KHOẢN BET THÀNH CÔNG
-            accountsUsed: successfulResults.map(result => ({
-              accountId: result.accountId,
-              username: result.username,
-              numbersAssigned: result.assignedNumbers, // Số được phân phối cho tài khoản này
-              stakeAmount: sgd666Utils.calculateTotalStake(
-                sgd666Utils.mapBetType(bettingData.betType), 
-                result.assignedNumbers.length, 
-                bettingData.points,
-                processedStations.length || 1
-              ),
-              betStatus: 'success',
-              betResponse: {
-                orderCode: result.orderCode,
-                betDetails: result.betDetails
-              },
-              errorMessage: null
-            }))
+          // Phân tích kết quả round này
+          const successfulResults = roundResults.filter(r => r.success);
+          const failedResults = roundResults.filter(r => !r.success);
+
+          console.log(`✅ Thành công: ${successfulResults.length}, ❌ Thất bại: ${failedResults.length}`);
+
+          // Thêm kết quả thành công vào danh sách tổng
+          allResults.push(...successfulResults);
+
+          // Đánh dấu tài khoản đã sử dụng (cả thành công và thất bại)
+          roundResults.forEach(result => {
+            if (result.accountId) {
+              usedAccountIds.add(result.accountId.toString());
+            }
           });
 
-          // Cập nhật thống kê
-          betHistory.updateStatistics();
+          // Cập nhật số còn lại (loại bỏ số đã đánh thành công)
+          const successfulNumbers = new Set();
+          successfulResults.forEach(result => {
+            result.assignedNumbers.forEach(num => successfulNumbers.add(num));
+          });
 
-          // Lưu vào database
-          await betHistory.save();
+          remainingNumbers = remainingNumbers.filter(num => !successfulNumbers.has(num));
+          console.log(`📊 Đã đánh thành công ${successfulNumbers.size} số, còn lại ${remainingNumbers.length} số`);
 
-        } catch (saveError) {
-          console.error('Lỗi khi lưu BetHistory:', saveError.message);
-          console.error('Chi tiết lỗi:', saveError);
-          // Không throw error để không ảnh hưởng đến kết quả betting
+          // Cập nhật danh sách tài khoản khả dụng (loại bỏ tài khoản đã sử dụng)
+          availableAccounts = availableAccounts.filter(account => 
+            !usedAccountIds.has(account._id.toString())
+          );
+
+          console.log(`🔧 Còn lại ${availableAccounts.length} tài khoản khả dụng trong batch hiện tại`);
+
+          // Nếu không còn số thì dừng
+          if (remainingNumbers.length === 0) {
+            console.log('🎉 Đã đánh hết tất cả số!');
+            break;
+          }
+
+          // Delay trước khi retry
+          if (retryCount < maxRetries && remainingNumbers.length > 0) {
+            console.log('⏳ Chờ 2 giây trước khi retry...');
+            await new Promise(resolve => setTimeout(resolve, 2000));
+          }
         }
+
+        const successCount = allResults.length;
+
+        // Tạo numberDistribution để hiển thị (chỉ từ kết quả thành công)
+        const finalNumberDistribution = {};
+        allResults.forEach(result => {
+          finalNumberDistribution[result.accountId.toString()] = result.assignedNumbers;
+        });
+
+        return await this.saveBetHistoryAndReturnResult(
+          bettingData, 
+          distributionType, 
+          userId, 
+          allResults, 
+          originalNumbers, 
+          remainingNumbers, 
+          retryCount, 
+          finalNumberDistribution,
+          allActiveAccounts.length
+        );
+
       } else {
-        console.log('Không có bet thành công nào, không lưu BetHistory');
+        // LOGIC THÔNG THƯỜNG CHO 'all' - Tất cả tài khoản đánh cùng số
+        console.log(`🎯 Bắt đầu betting (${distributionType}): Tất cả tài khoản đánh cùng số`);
+        
+        // Phân phối số cho tài khoản
+        const numberDistribution = this.distributeNumbers(originalNumbers, initialAccounts, distributionType);
+        
+        // Chỉ lấy những tài khoản có số được phân phối
+        const accountsWithNumbers = initialAccounts.filter(account => 
+          numberDistribution[account._id.toString()] && 
+          numberDistribution[account._id.toString()].length > 0
+        );
+        
+        if (accountsWithNumbers.length === 0) {
+          return {
+            success: false,
+            error: 'Không có tài khoản nào được phân phối số'
+          };
+        }
+
+        const BATCH_SIZE = 5; // Xử lý 5 tài khoản cùng lúc
+        const results = [];
+
+        // Xử lý theo batch - CHỈ XỬ LÝ CÁC TÀI KHOẢN CÓ SỐ
+        for (let i = 0; i < accountsWithNumbers.length; i += BATCH_SIZE) {
+          const batch = accountsWithNumbers.slice(i, i + BATCH_SIZE);
+          
+          const batchPromises = batch.map(async (account) => {
+            // Tạo betData riêng cho từng account với số được phân phối
+            const accountBetData = {
+              ...bettingData,
+              numbersArray: numberDistribution[account._id.toString()],
+              numbers: numberDistribution[account._id.toString()].join(', ')
+            };
+            
+            const result = await this.placeBet(account, accountBetData);
+            return {
+              accountId: account._id,
+              username: account.username,
+              assignedNumbers: numberDistribution[account._id.toString()],
+              ...result
+            };
+          });
+
+          const batchResults = await Promise.allSettled(batchPromises);
+          
+          batchResults.forEach(result => {
+            if (result.status === 'fulfilled') {
+              results.push(result.value);
+            } else {
+              results.push({
+                accountId: null,
+                username: 'Unknown',
+                assignedNumbers: [],
+                success: false,
+                error: 'Promise rejected',
+                details: result.reason?.message || 'Unknown error'
+              });
+            }
+          });
+
+          // Delay giữa các batch
+          if (i + BATCH_SIZE < accountsWithNumbers.length) {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+          }
+        }
+
+        const successfulResults = results.filter(r => r.success);
+        
+        console.log(`✅ Thành công: ${successfulResults.length}, ❌ Thất bại: ${results.length - successfulResults.length}`);
+
+        // Tạo numberDistribution để hiển thị (chỉ từ kết quả thành công)
+        const finalNumberDistribution = {};
+        successfulResults.forEach(result => {
+          finalNumberDistribution[result.accountId.toString()] = result.assignedNumbers;
+        });
+
+        return await this.saveBetHistoryAndReturnResult(
+          bettingData, 
+          distributionType, 
+          userId, 
+          successfulResults, 
+          originalNumbers, 
+          [], // Không có remainingNumbers cho 'all'
+          1, // Chỉ 1 lần thực hiện
+          finalNumberDistribution,
+          allActiveAccounts.length
+        );
       }
 
-      return {
-        success: true,
-        distributionType: distributionType,
-        numberDistribution: Object.keys(numberDistribution).map(accountId => {
-          const account = accounts.find(acc => acc._id.toString() === accountId);
-          return {
-            accountId,
-            username: account?.username,
-            numbers: numberDistribution[accountId]
-          };
-        }),
-        summary: {
-          total: results.length, // Số tài khoản thực sự được sử dụng
-          success: successCount,
-          failed: failCount,
-          proxyError: proxyErrorCount,
-          totalAccountsAvailable: accounts.length, // Tổng số tài khoản có sẵn
-          accountsUsed: accountsWithNumbers.length // Số tài khoản thực sự được sử dụng
-        },
-        details: results,
-        betHistoryId: betHistory?._id,
-        orderCode: betHistory?.orderCode,
-        savedAccountsCount: betHistory?.accountsUsed?.length || 0
-      };
     } catch (error) {
       return {
         success: false,
@@ -601,6 +703,145 @@ class BettingService {
         details: error.message
       };
     }
+  }
+
+  // Hàm helper để lưu BetHistory và trả về kết quả
+  async saveBetHistoryAndReturnResult(bettingData, distributionType, userId, allResults, originalNumbers, remainingNumbers, retryCount, finalNumberDistribution, totalActiveAccounts) {
+    const { websiteType } = bettingData;
+    const successCount = allResults.length;
+
+    // Chỉ lưu BetHistory nếu có ít nhất 1 bet thành công
+    let betHistory = null;
+    if (successCount > 0) {
+      try {
+        // Lọc chỉ lấy những tài khoản bet thành công
+        const successfulResults = allResults.filter(r => r.success);
+        
+        // Tạo orderCode từ bet thành công đầu tiên hoặc tạo mới
+        const mainOrderCode = successfulResults.length > 0 && successfulResults[0].orderCode 
+          ? successfulResults[0].orderCode 
+          : BetHistory.generateOrderCode();
+
+        // Tính tổng số từ tất cả tài khoản thành công
+        const allSuccessfulNumbers = new Set();
+        successfulResults.forEach(result => {
+          result.assignedNumbers.forEach(num => allSuccessfulNumbers.add(num));
+        });
+
+        // Xử lý stations data để đúng format
+        let processedStations = [];
+        if (bettingData.stations) {
+          if (Array.isArray(bettingData.stations)) {
+            processedStations = bettingData.stations.map(station => {
+              if (typeof station === 'string') {
+                return { value: station, label: station };
+              } else if (station && typeof station === 'object') {
+                return {
+                  value: station.value || station.label || station,
+                  label: station.label || station.value || station
+                };
+              }
+              return { value: station, label: station };
+            });
+          } else if (typeof bettingData.stations === 'string') {
+            processedStations = [{ value: bettingData.stations, label: bettingData.stations }];
+          }
+        }
+
+        // Tính tổng stake
+        const totalStake = successfulResults.reduce((total, result) => {
+          if (websiteType === 'sgd666') {
+            return total + sgd666Utils.calculateTotalStake(
+              sgd666Utils.mapBetType(bettingData.betType), 
+              result.assignedNumbers.length, 
+              bettingData.points,
+              processedStations.length || 1
+            );
+          } else {
+            // ONE789 logic
+            return total + (result.assignedNumbers.length * bettingData.points * (processedStations.length || 1));
+          }
+        }, 0);
+
+        betHistory = new BetHistory({
+          orderCode: mainOrderCode,
+          websiteType: bettingData.websiteType,
+          betType: websiteType === 'sgd666' ? sgd666Utils.mapBetType(bettingData.betType) : bettingData.betType,
+          betTypeDisplay: bettingData.betType,
+          region: bettingData.region,
+          stations: processedStations,
+          numbers: Array.from(allSuccessfulNumbers), // Chỉ lưu số từ các bet thành công
+          points: bettingData.points,
+          totalStake: totalStake,
+          distributionType: distributionType,
+          userId: userId,
+          // CHỈ LƯU CÁC TÀI KHOẢN BET THÀNH CÔNG
+          accountsUsed: successfulResults.map(result => ({
+            accountId: result.accountId,
+            username: result.username,
+            numbersAssigned: result.assignedNumbers,
+            stakeAmount: websiteType === 'sgd666' 
+              ? sgd666Utils.calculateTotalStake(
+                  sgd666Utils.mapBetType(bettingData.betType), 
+                  result.assignedNumbers.length, 
+                  bettingData.points,
+                  processedStations.length || 1
+                )
+              : result.assignedNumbers.length * bettingData.points * (processedStations.length || 1),
+            betStatus: 'success',
+            betResponse: {
+              orderCode: result.orderCode,
+              betDetails: result.betDetails
+            },
+            errorMessage: null
+          }))
+        });
+
+        // Cập nhật thống kê
+        betHistory.updateStatistics();
+
+        // Lưu vào database
+        await betHistory.save();
+
+      } catch (saveError) {
+        console.error('Lỗi khi lưu BetHistory:', saveError.message);
+        console.error('Chi tiết lỗi:', saveError);
+      }
+    } else {
+      console.log('Không có bet thành công nào, không lưu BetHistory');
+    }
+
+    return {
+      success: true,
+      distributionType: distributionType,
+      numberDistribution: Object.keys(finalNumberDistribution).map(accountId => {
+        const result = allResults.find(r => r.accountId.toString() === accountId);
+        return {
+          accountId,
+          username: result?.username,
+          numbers: finalNumberDistribution[accountId]
+        };
+      }),
+      summary: {
+        total: allResults.length,
+        success: successCount,
+        failed: 0,
+        proxyError: 0,
+        totalAccountsAvailable: totalActiveAccounts,
+        accountsUsed: allResults.length,
+        retryInfo: distributionType === 'all' ? null : {
+          totalRetries: retryCount,
+          originalNumbers: originalNumbers.length,
+          successfulNumbers: allResults.reduce((total, r) => total + r.assignedNumbers.length, 0),
+          numbersNotBet: remainingNumbers.length,
+          successRate: ((allResults.reduce((total, r) => total + r.assignedNumbers.length, 0) / originalNumbers.length) * 100).toFixed(2) + '%'
+        }
+      },
+      details: allResults,
+      betHistoryId: betHistory?._id,
+      orderCode: betHistory?.orderCode,
+      savedAccountsCount: betHistory?.accountsUsed?.length || 0
+    };
   }
 }
 

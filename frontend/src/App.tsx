@@ -135,7 +135,7 @@ function App() {
                     : 'text-gray-700 hover:text-purple-600 hover:bg-purple-50'
                 }`}
               >
-                📊 Thống kê Betting
+                📊 Thống kê
               </button>
               <button 
                 onClick={handleLogout} 

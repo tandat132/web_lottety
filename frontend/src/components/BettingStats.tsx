@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { betHistoryAPI } from '../services/api';
-import type { BetHistoryItem, BettingStats, DateFilter } from '../types/betting';
+import type { BetHistoryItem, BettingStats, DateFilter, AccountDetailData } from '../types/betting';
 
 const BettingStatsPage: React.FC = () => {
   const [dateFilter, setDateFilter] = useState<DateFilter>({
@@ -225,7 +225,7 @@ const BettingStatsPage: React.FC = () => {
     if (!accountMatch) return [];
 
     const [, accountName, website] = accountMatch;
-    const accountDetails: any[] = [];
+    const accountDetails: AccountDetailData[] = [];
 
     filteredBetHistories.forEach(bet => {
       if (bet.websiteType.toUpperCase() !== website) return;
@@ -277,9 +277,11 @@ const BettingStatsPage: React.FC = () => {
     return accountDetails;
   };
 
-  const displayData = getAccountDetailData();
-  console.log(displayData)
   const isAccountView = selectedAccount !== 'all';
+
+  const displayData: (BetHistoryItem | AccountDetailData)[] = isAccountView 
+    ? getAccountDetailData() 
+    : filteredBetHistories;
 
   // Tính toán thống kê cho view tài khoản - SỬA LẠI LOGIC TÍNH TỔNG
   const calculateAccountStats = () => {
@@ -315,11 +317,10 @@ const BettingStatsPage: React.FC = () => {
 
       if (!accountResult || !bet.result?.isChecked) {
         // Nếu chưa có kết quả, chỉ tính số lượng và điểm cược
-        account.numbersAssigned.forEach(number => {
-          totalBets++;
-          const stakePerNumber = account.stakeAmount / account.numbersAssigned.length;
-          totalPoints += stakePerNumber;
-        });
+        const numbersCount = account.numbersAssigned.length;
+        totalBets += numbersCount;
+        const stakePerNumber = account.stakeAmount / numbersCount;
+        totalPoints += stakePerNumber * numbersCount;
         return;
       }
 
@@ -327,7 +328,7 @@ const BettingStatsPage: React.FC = () => {
       if (accountResult.winDetails && Array.isArray(accountResult.winDetails)) {
         accountResult.winDetails.forEach(detail => {
           if (detail.numbers && Array.isArray(detail.numbers)) {
-            detail.numbers.forEach(number => {
+            detail.numbers.forEach((number: string) => {
               // Kiểm tra xem số này có trong numbersAssigned của account không
               if (account.numbersAssigned.includes(number)) {
                 totalBets++;
@@ -720,14 +721,14 @@ const BettingStatsPage: React.FC = () => {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Kiểu đánh
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-2/6">
                   Miền/Đài
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-5/6">
                   {isAccountView ? 'Số đã đánh' : 'Số đã đánh'}
                 </th>
                 {!isAccountView && (
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
                     Tài khoản
                   </th>
                 )}
@@ -740,7 +741,7 @@ const BettingStatsPage: React.FC = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {displayData.map((item: any) => (
+              {displayData.map((item: BetHistoryItem | AccountDetailData) => (
                 <tr key={item._id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     <div>
@@ -766,8 +767,10 @@ const BettingStatsPage: React.FC = () => {
                     <div>
                       <div className="font-medium mb-1">{getRegionLabel(item.region)}</div>
                       <div className="flex flex-wrap gap-1">
-                        {item.stations.map((station: any, index: number) => {
-                          const isWinning = isWinningChannel(station, item);
+                        {item.stations.map((station: { value: string; label: string }, index: number) => {
+                          const isWinning = 'isAccountView' in item 
+                            ? false // AccountDetailData không có logic winning channel
+                            : isWinningChannel(station, item as BetHistoryItem);
                           return (
                             <span 
                               key={index}
@@ -789,22 +792,24 @@ const BettingStatsPage: React.FC = () => {
                       // Hiển thị số cụ thể cho view tài khoản
                       <span 
                         className={`inline-block px-2 py-1 rounded text-sm font-mono border transition-colors duration-200 ${
-                          item.isWinning 
+                          (item as AccountDetailData).isWinning 
                             ? 'bg-yellow-200 text-yellow-900 border-yellow-400 font-bold' 
                             : 'bg-gray-100 text-gray-800'
                         }`}
                       >
-                        {item.number}
+                        {'number' in item ? item.number : item.numbers?.[0] || ''}
                       </span>
                     ) : (
                       // Hiển thị tất cả số cho view order
                       <div className="flex flex-wrap gap-1">
-                        {item.numbers.map((number: any, index: number) => {
-                          const isWinning = isWinningNumber(number, item);
+                        {item.numbers.map((number: string, index: number) => {
+                          const isWinning = 'isAccountView' in item 
+                            ? (item as AccountDetailData).isWinning // Sử dụng isWinning từ AccountDetailData
+                            : isWinningNumber(number, item as BetHistoryItem);
                           return (
                             <span 
                               key={index}
-                              className={`inline-block px-1.5 py-0.5 rounded text-xs font-mono border transition-colors duration-200 ${
+                              className={`inline-block px-1 py-0.5 rounded text-xs font-mono border transition-colors duration-200 ${
                                 isWinning 
                                   ? 'bg-yellow-200 text-yellow-900 border-yellow-400 font-bold' 
                                   : 'bg-gray-100 hover:bg-gray-200 text-gray-800'
@@ -818,22 +823,22 @@ const BettingStatsPage: React.FC = () => {
                     )}
                   </td>
                   {!isAccountView && (
-                    <td className="px-6 py-4 text-sm text-gray-900">
+                    <td className="px-2 py-4 text-sm text-gray-900 w-24">
                       <div>
-                        <div className="font-medium mb-1">
+                        <div className="font-medium mb-1 text-xs">
                           <span className="text-green-600">{item.successfulBets}</span>
-                          <span className="text-gray-400 mx-1">/</span>
+                          <span className="text-gray-400 mx-0.5">/</span>
                           <span className="text-gray-600">{item.totalAccountsUsed}</span>
                         </div>
-                        <div className="text-xs text-gray-500 max-w-32 truncate" title={item.accountsUsed.filter((acc: any) => acc.betStatus === 'success').map((acc: any) => acc.username).join(', ')}>
-                          {item.accountsUsed.filter((acc: any) => acc.betStatus === 'success').map((acc: any) => acc.username).join(', ')}
+                        <div className="text-xs text-gray-500 max-w-20 truncate" title={item.accountsUsed.filter((acc: { betStatus: string; username: string }) => acc.betStatus === 'success').map((acc: { betStatus: string; username: string }) => acc.username).join(', ')}>
+                          {item.accountsUsed.filter((acc: { betStatus: string; username: string }) => acc.betStatus === 'success').map((acc: { betStatus: string; username: string }) => acc.username).join(', ')}
                         </div>
                       </div>
                     </td>
                   )}
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                     <div className="text-right">
-                      <div className="font-bold text-lg">{formatCurrency(isAccountView ? item.stakeAmount : item.totalStake)}</div>
+                      <div className="font-bold text-lg">{formatCurrency('stakeAmount' in item ? item.stakeAmount : item.totalStake)}</div>
                       <div className="text-xs text-gray-500">điểm</div>
                     </div>
                   </td>

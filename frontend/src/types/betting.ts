@@ -106,3 +106,29 @@ export interface DateFilter {
   startDate: string;
   endDate: string;
 }
+
+export interface AccountDetailData {
+    _id: string;
+    orderCode: string;
+    websiteType: 'sgd666' | 'one789';
+    betType: string;
+    betTypeDisplay: string;
+    region: 'south' | 'central' | 'north';
+    stations: Array<{ value: string; label: string }>;
+    number: string;
+    numbers: string[];
+    points: number;
+    stakeAmount: number;
+    totalStake: number;
+    accountUsername: string;
+    accountsUsed: Array<any>;
+    successfulBets: number;
+    totalAccountsUsed: number;
+    betStatus: 'pending' | 'success' | 'failed';
+    isWinning: boolean;
+    winAmount: number;
+    betDate: string;
+    createdAt: string;
+    result: any;
+    isAccountView: true;
+  }

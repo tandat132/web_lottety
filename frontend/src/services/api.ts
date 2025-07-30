@@ -1,5 +1,6 @@
 import axios from 'axios';
 import type { Account } from '../types/account';
+import type { BetHistoryItem } from '../types/betting';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
@@ -79,7 +80,7 @@ export interface BetHistoryFilters {
 export interface BetHistoryResponse {
   success: boolean;
   data: {
-    betHistories: any[];
+    betHistories: BetHistoryItem[];
     pagination: {
       currentPage: number;
       totalPages: number;

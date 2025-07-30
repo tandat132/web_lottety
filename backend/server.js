@@ -17,6 +17,7 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/accounts', accountRoutes);
 app.use('/api/sgd666-auth', require('./routes/sgd666Auth')); 
+app.use('/api/one789-auth', require('./routes/one789Auth'));
 app.use('/api/betting', require('./routes/betting'));
 app.use('/api/account-check', require('./routes/accountCheck'));
 app.use('/api/bet-history', require('./routes/betHistory'));
