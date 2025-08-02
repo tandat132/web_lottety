@@ -185,8 +185,6 @@ class One789BettingService {
         'priority': 'u=1, i',
         'referer': 'https://b2one789.net/',
         'sec-ch-ua': '"Google Chrome";v="135", "Not-A.Brand";v="8", "Chromium";v="135"',
-        'sec-ch-ua-mobile': '?0',
-        'sec-ch-ua-platform': '"Windows"',
         'sec-fetch-dest': 'empty',
         'sec-fetch-mode': 'cors',
         'sec-fetch-site': 'cross-site',
@@ -202,10 +200,13 @@ class One789BettingService {
       // Thêm proxy nếu có
       if (account.proxy) {
         const parsedProxy = proxyService.parseProxyString(account.proxy);
-        if (parsedProxy && parsedProxy.auth) {
-          const proxyUrl = `http://${parsedProxy.auth.username}:${parsedProxy.auth.password}@${parsedProxy.host}:${parsedProxy.port}`;
-          axiosConfig.httpsAgent = new HttpsProxyAgent(proxyUrl);
+        let proxyUrl;
+        if (parsedProxy.auth) {
+          proxyUrl = `http://${parsedProxy.auth.username}:${parsedProxy.auth.password}@${parsedProxy.host}:${parsedProxy.port}`;
+        } else {
+          proxyUrl = `http://${parsedProxy.host}:${parsedProxy.port}`;
         }
+        axiosConfig.httpsAgent = new HttpsProxyAgent(proxyUrl);
       }
 
       // Gửi request
@@ -216,9 +217,9 @@ class One789BettingService {
       // Kiểm tra response
       if (response.data && response.status === 200) {
         // Tạo orderCode từ response hoặc timestamp
-        const orderCode = response.Tx || 
-                         response.data.orderId || 
-                         response.data.id ||
+        const orderCode = response.data[0].Tx || 
+                         response.data[0].orderId || 
+                         response.data[0].id ||
                          `ONE789_${Date.now()}_${account.username}`;
 
         return {

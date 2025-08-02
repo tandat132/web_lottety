@@ -1,8 +1,28 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { betHistoryAPI } from '../services/api';
 import type { BetHistoryItem, BettingStats, DateFilter, AccountDetailData } from '../types/betting';
 
 const BettingStatsPage: React.FC = () => {
+  // Thêm helper function ở đầu component
+  const getUniqueAccounts = (accountsUsed: Array<{ betStatus: string; username: string }>) => {
+    const uniqueAccounts = new Map();
+    
+    accountsUsed.forEach(acc => {
+      const existing = uniqueAccounts.get(acc.username);
+      if (!existing) {
+        uniqueAccounts.set(acc.username, acc);
+      } else {
+        // Ưu tiên hiển thị trạng thái success, sau đó failed, cuối cùng pending
+        if (acc.betStatus === 'success' || 
+            (existing.betStatus !== 'success' && acc.betStatus === 'failed')) {
+          uniqueAccounts.set(acc.username, acc);
+        }
+      }
+    });
+    
+    return Array.from(uniqueAccounts.values());
+  };
+
   const [dateFilter, setDateFilter] = useState<DateFilter>({
     startDate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 7 ngày trước
     endDate: new Date().toISOString().split('T')[0] // hôm nay
@@ -24,6 +44,72 @@ const BettingStatsPage: React.FC = () => {
     itemsPerPage: 20
   });
   
+  const [allBetHistories, setAllBetHistories] = useState<BetHistoryItem[]>([]); // Data đầy đủ cho dropdown
+
+  // Fetch dữ liệu đầy đủ cho dropdown (không filter betType)
+  const fetchAllBetHistory = useCallback(async () => {
+    try {
+      const filters = {
+        startDate: dateFilter.startDate,
+        endDate: dateFilter.endDate,
+        websiteType: selectedWebsite !== 'all' ? selectedWebsite : undefined,
+        region: selectedRegion !== 'all' ? selectedRegion : undefined,
+        // Không filter betType để lấy tất cả data
+        page: 1,
+        limit: 1000 // Lấy nhiều để có đủ data cho dropdown
+      };
+
+      const response = await betHistoryAPI.getHistory(filters);
+      if (response.success) {
+        setAllBetHistories(response.data.betHistories);
+      }
+    } catch (err) {
+      console.error('Error fetching all bet history:', err);
+    }
+  }, [dateFilter, selectedWebsite, selectedRegion]);
+
+  // Fetch dữ liệu đầy đủ khi các filter chính thay đổi (trừ betType)
+  useEffect(() => {
+    fetchAllBetHistory();
+  }, [fetchAllBetHistory]);
+
+  // Fetch dữ liệu từ API
+  const fetchBetHistory = useCallback(async (page: number = 1) => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const filters = {
+        startDate: dateFilter.startDate,
+        endDate: dateFilter.endDate,
+        websiteType: selectedWebsite !== 'all' ? selectedWebsite : undefined,
+        region: selectedRegion !== 'all' ? selectedRegion : undefined,
+        betType: selectedBetType !== 'all' ? selectedBetType : undefined,
+        page,
+        limit: 20
+      };
+
+      const response = await betHistoryAPI.getHistory(filters);
+
+      if (response.success) {
+        setBetHistories(response.data.betHistories);
+        setPagination(response.data.pagination);
+      } else {
+        setError('Không thể tải dữ liệu lịch sử cược');
+      }
+    } catch (err) {
+      console.error('Error fetching bet history:', err);
+      setError('Lỗi khi tải dữ liệu');
+    } finally {
+      setLoading(false);
+    }
+  }, [dateFilter, selectedWebsite, selectedRegion, selectedBetType]);
+
+  // Fetch dữ liệu hiển thị khi tất cả filter thay đổi
+  useEffect(() => {
+    fetchBetHistory(1);
+  }, [fetchBetHistory]);
+
   // Helper functions để kiểm tra số và kênh thắng
   const isWinningNumber = (number: string, bet: BetHistoryItem): boolean => {
     return bet.result?.winningNumbers?.includes(number) || false;
@@ -89,57 +175,43 @@ const BettingStatsPage: React.FC = () => {
     return bet.result.channelResults[backendStationKey]?.status === 'WIN';
   };
 
-  // Fetch dữ liệu từ API
-  const fetchBetHistory = async (page: number = 1) => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      const filters = {
-        startDate: dateFilter.startDate,
-        endDate: dateFilter.endDate,
-        websiteType: selectedWebsite !== 'all' ? selectedWebsite : undefined,
-        region: selectedRegion !== 'all' ? selectedRegion : undefined,
-        betType: selectedBetType !== 'all' ? selectedBetType : undefined,
-        page,
-        limit: 20
-      };
-
-      const response = await betHistoryAPI.getHistory(filters);
-
-      if (response.success) {
-        setBetHistories(response.data.betHistories);
-        setPagination(response.data.pagination);
-      } else {
-        setError('Không thể tải dữ liệu lịch sử cược');
-      }
-    } catch (err) {
-      console.error('Error fetching bet history:', err);
-      setError('Lỗi khi tải dữ liệu');
-    } finally {
-      setLoading(false);
+  // Hàm kiểm tra tài khoản cụ thể có thực sự trúng trong lệnh này không
+  const isAccountActuallyWinning = (account: { betStatus: string; username: string }, item: BetHistoryItem): boolean => {
+    if (!item.result?.isChecked || account.betStatus !== 'success') {
+      return false;
     }
+    
+    // Tìm kết quả cụ thể của tài khoản này trong accountResults
+    const accountResult = item.result?.accountResults?.find(
+      result => result.accountUsername === account.username
+    );
+    
+    if (!accountResult || !accountResult.winDetails) {
+      return false;
+    }
+    
+    // Kiểm tra xem tài khoản này có thực sự thắng tiền không
+    let hasActualWin = false;
+    if (Array.isArray(accountResult.winDetails)) {
+      accountResult.winDetails.forEach(detail => {
+        if (detail.status === 'WIN' && detail.winLoss > 0) {
+          hasActualWin = true;
+        }
+      });
+    }
+    
+    return hasActualWin;
   };
-
-  // Fetch dữ liệu khi component mount hoặc filters thay đổi
-  useEffect(() => {
-    fetchBetHistory(1);
-  }, [dateFilter, selectedWebsite, selectedRegion, selectedBetType]);
-
-  // Reset account filter khi dữ liệu thay đổi
-  useEffect(() => {
-    setSelectedAccount('all');
-  }, [betHistories]);
-
-  // Lấy danh sách tài khoản duy nhất từ dữ liệu thực
+  
+  // Lấy danh sách tài khoản từ data đầy đủ (không bị filter theo betType)
   const uniqueAccounts = Array.from(
     new Set(
-      betHistories.flatMap(bet => 
+      allBetHistories.flatMap(bet => 
         bet.accountsUsed.map(account => `${account.username} (${bet.websiteType.toUpperCase()})`)
       )
     )
   ).sort();
-
+  
   // Lọc dữ liệu theo kết quả ở frontend (vì backend chưa hỗ trợ)
   const filteredBetHistories = betHistories.filter(bet => {
     if (selectedResult === 'all') return true;
@@ -227,6 +299,7 @@ const BettingStatsPage: React.FC = () => {
     const [, accountName, website] = accountMatch;
     const accountDetails: AccountDetailData[] = [];
 
+    // Lọc các lệnh đặt cược mà tài khoản này có tham gia
     filteredBetHistories.forEach(bet => {
       if (bet.websiteType.toUpperCase() !== website) return;
       
@@ -238,39 +311,49 @@ const BettingStatsPage: React.FC = () => {
         result => result.accountUsername === accountName
       );
 
-      // Tạo một dòng cho mỗi số mà tài khoản này đã đánh
-      account.numbersAssigned?.forEach(number => {
-        const isWinning = bet.result?.winningNumbers?.includes(number) || false;
-        // SỬA: Sử dụng winLoss thay vì winAmount
-        const numberWinAmount = accountResult?.winDetails?.find(
-          detail => detail.numbers?.includes(number)
-        )?.winLoss || 0;
+      // Tính tổng số tiền thắng/thua của tài khoản này trong lệnh này
+      let totalWinAmount = 0;
+      let hasWinning = false;
 
-        accountDetails.push({
-          _id: `${bet._id}_${accountName}_${number}`,
-          orderCode: bet.orderCode,
-          websiteType: bet.websiteType,
-          betType: bet.betType,
-          betTypeDisplay: bet.betTypeDisplay,
-          region: bet.region,
-          stations: bet.stations,
-          number: number, // Số cụ thể
-          numbers: [number], // Để tương thích với hiển thị
-          points: bet.points,
-          stakeAmount: account.stakeAmount / account.numbersAssigned.length, // Chia đều điểm cho mỗi số
-          totalStake: account.stakeAmount / account.numbersAssigned.length, // Để tương thích
-          accountUsername: accountName,
-          accountsUsed: [account], // Để tương thích
-          successfulBets: 1,
-          totalAccountsUsed: 1,
-          betStatus: account.betStatus,
-          isWinning: isWinning,
-          winAmount: numberWinAmount, // Sử dụng winLoss từ winDetails
-          betDate: bet.betDate,
-          createdAt: bet.createdAt,
-          result: bet.result,
-          isAccountView: true
+      if (accountResult?.winDetails && Array.isArray(accountResult.winDetails)) {
+        accountResult.winDetails.forEach(detail => {
+          if (detail.winLoss > 0) {
+            totalWinAmount += detail.winLoss;
+            hasWinning = true;
+          }
         });
+      }
+
+      // Nếu không thắng, số tiền thua = số tiền đã cược
+      if (!hasWinning && bet.result?.isChecked) {
+        totalWinAmount = -account.stakeAmount;
+      }
+
+      // Tạo một dòng cho toàn bộ lệnh đặt cược của tài khoản này
+      accountDetails.push({
+        _id: `${bet._id}_${accountName}`,
+        orderCode: bet.orderCode,
+        websiteType: bet.websiteType,
+        betType: bet.betType,
+        betTypeDisplay: bet.betTypeDisplay,
+        region: bet.region,
+        stations: bet.stations,
+        number: account.numbersAssigned?.join(', ') || '', // Hiển thị tất cả số của tài khoản
+        numbers: account.numbersAssigned || [], // Tất cả số mà tài khoản này đã đánh
+        points: bet.points,
+        stakeAmount: account.stakeAmount, // Tổng số tiền cược của tài khoản này
+        totalStake: account.stakeAmount,
+        accountUsername: accountName,
+        accountsUsed: [account], // Chỉ tài khoản được lọc
+        successfulBets: account.betStatus === 'success' ? 1 : 0,
+        totalAccountsUsed: 1, // Chỉ hiển thị 1 tài khoản
+        betStatus: account.betStatus,
+        isWinning: hasWinning,
+        winAmount: totalWinAmount,
+        betDate: bet.betDate,
+        createdAt: bet.createdAt,
+        result: bet.result,
+        isAccountView: true
       });
     });
 
@@ -438,7 +521,30 @@ const BettingStatsPage: React.FC = () => {
       'giai-4': '🥉 Hạng 4',
       'giai-3': '🏅 Hạng 3',
       'giai-2': '🎖️ Hạng 2',
-      'giai-1': '👑 Hạng 1'
+      'giai-1': '👑 Hạng 1',
+
+      // ONE789 format (từ one789BettingService mapping)
+      'de': '🎲 Đề',
+      'de-dau': '🎲⬆️ Đề đầu',
+      'de-giai1': '🎲🏆 Đề giải 1',
+      'de-dau-giai1': '🎲⬆️🏆 Đề đầu giải 1',
+      'de-thanh-tai': '🎲💰 Đề thần tài',
+      'de-dau-than-tai': '🎲⬆️💰 Đề đầu thần tài',
+      'lo-xien': '🔗 Lô xiên',
+      'lo-truot': '🎢 Lô trượt',
+      'lo-dau': '🔗⬆️ Lô đầu',
+      '2d-dau': '2️⃣⬆️ 2D đầu',
+      '2d-duoi': '2️⃣⬇️ 2D đuôi',
+      '2d-18lo': '2️⃣🎰 2D 18 lô',
+      '2d-18lo-dau': '2️⃣🎰⬆️ 2D 18 lô đầu',
+      '2d-dau-mb2': '2️⃣⬆️🏛️ 2D đầu MB2',
+      '3d-dau': '3️⃣⬆️ 3D đầu',
+      '3d-duoi': '3️⃣⬇️ 3D đuôi',
+      '3d-17lo': '3️⃣🎰 3D 17 lô',
+      '3d-7lo': '3️⃣🎯 3D 7 lô',
+      '3d-23lo-mb2': '3️⃣🎰🏛️ 3D 23 lô MB2',
+      '4d-duoi': '4️⃣⬇️ 4D đuôi',
+      '4d-16lo': '4️⃣🎰 4D 16 lô'
     };
     return betTypeLabels[betType] || betType;
   };
@@ -447,15 +553,42 @@ const BettingStatsPage: React.FC = () => {
     const regionLabels: Record<string, string> = {
       'south': '🌴 Miền Nam',
       'central': '🏔️ Miền Trung',
-      'north': '🏛️ Miền Bắc'
+      'north': '🏛️ Miền Bắc',
+      'north1': '🏛️ Miền Bắc 1',
+      'north2': '🏮 Miền Bắc 2'
     };
     return regionLabels[region] || region;
   };
 
-  // Lấy danh sách bet types duy nhất từ dữ liệu thực
-  const uniqueBetTypes = Array.from(new Set(betHistories.map(bet => bet.betType)));
+  // Lấy danh sách bet types từ data đầy đủ hoặc theo tài khoản
+  const getUniqueBetTypes = () => {
+    if (selectedAccount === 'all') {
+      return Array.from(new Set(allBetHistories.map(bet => bet.betType)));
+    } else {
+      const accountMatch = selectedAccount.match(/^(.+) \((.+)\)$/);
+      if (!accountMatch) return Array.from(new Set(allBetHistories.map(bet => bet.betType)));
 
-  
+      const [, accountName, website] = accountMatch;
+      
+      return Array.from(new Set(
+        allBetHistories
+          .filter(bet => 
+            bet.websiteType.toUpperCase() === website && 
+            bet.accountsUsed.some(account => account.username === accountName)
+          )
+          .map(bet => bet.betType)
+      ));
+    }
+  };
+
+  const uniqueBetTypes = getUniqueBetTypes();
+
+  // Reset betType khi chọn tài khoản mới và betType hiện tại không có trong danh sách
+  useEffect(() => {
+    if (selectedBetType !== 'all' && !uniqueBetTypes.includes(selectedBetType)) {
+      setSelectedBetType('all');
+    }
+  }, [selectedAccount, selectedBetType, uniqueBetTypes]);
 
   if (loading) {
     return (
@@ -732,6 +865,11 @@ const BettingStatsPage: React.FC = () => {
                     Tài khoản
                   </th>
                 )}
+                {isAccountView && (
+                  <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
+                    Tài khoản
+                  </th>
+                )}
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Điểm cược
                 </th>
@@ -789,16 +927,24 @@ const BettingStatsPage: React.FC = () => {
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-900">
                     {isAccountView ? (
-                      // Hiển thị số cụ thể cho view tài khoản
-                      <span 
-                        className={`inline-block px-2 py-1 rounded text-sm font-mono border transition-colors duration-200 ${
-                          (item as AccountDetailData).isWinning 
-                            ? 'bg-yellow-200 text-yellow-900 border-yellow-400 font-bold' 
-                            : 'bg-gray-100 text-gray-800'
-                        }`}
-                      >
-                        {'number' in item ? item.number : item.numbers?.[0] || ''}
-                      </span>
+                      // Hiển thị tất cả số mà tài khoản đã đánh trong lệnh này
+                      <div className="flex flex-wrap gap-1">
+                        {(item as AccountDetailData).numbers.map((number: string, index: number) => {
+                          const isWinning = item.result?.winningNumbers?.includes(number) || false;
+                          return (
+                            <span 
+                              key={index}
+                              className={`inline-block px-1 py-0.5 rounded text-xs font-mono border transition-colors duration-200 ${
+                                isWinning 
+                                  ? 'bg-yellow-200 text-yellow-900 border-yellow-400 font-bold' 
+                                  : 'bg-gray-100 hover:bg-gray-200 text-gray-800'
+                              }`}
+                            >
+                              {number}
+                            </span>
+                          );
+                        })}
+                      </div>
                     ) : (
                       // Hiển thị tất cả số cho view order
                       <div className="flex flex-wrap gap-1">
@@ -823,15 +969,44 @@ const BettingStatsPage: React.FC = () => {
                     )}
                   </td>
                   {!isAccountView && (
+                    <td className="px-2 py-4 text-sm text-gray-900 w-28">
+                      <div>
+                        <div className="font-medium mb-2 text-sm bg-purple-50 border border-purple-200 px-2 py-1 rounded shadow-sm text-center">
+                          <span className="text-green-600 font-bold">{getUniqueAccounts(item.accountsUsed).filter(acc => acc.betStatus === 'success').length}</span>
+                          <span className="text-gray-500 mx-1">/</span>
+                          <span className="text-purple-700 font-bold">{getUniqueAccounts(item.accountsUsed).length}</span>
+                        </div>
+                        <div className="text-xs leading-tight">
+                          {getUniqueAccounts(item.accountsUsed)
+                            .filter(acc => acc.betStatus === 'success') // Chỉ hiển thị tài khoản thành công
+                            .map((acc: { betStatus: string; username: string }, index: number) => {
+                            const isWinning = isAccountActuallyWinning(acc, item as BetHistoryItem);
+                            return (
+                              <div 
+                                key={index} 
+                                className={`font-medium mb-1 ${
+                                  isWinning 
+                                    ? 'px-1.5 py-0.5 rounded border bg-yellow-200 text-yellow-900 border-yellow-400 font-bold transition-colors duration-200'
+                                    : 'text-blue-600'
+                                }`}
+                              >
+                                {acc.username}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </td>
+                  )}
+                  {isAccountView && (
                     <td className="px-2 py-4 text-sm text-gray-900 w-24">
                       <div>
-                        <div className="font-medium mb-1 text-xs">
-                          <span className="text-green-600">{item.successfulBets}</span>
-                          <span className="text-gray-400 mx-0.5">/</span>
-                          <span className="text-gray-600">{item.totalAccountsUsed}</span>
-                        </div>
-                        <div className="text-xs text-gray-500 max-w-20 truncate" title={item.accountsUsed.filter((acc: { betStatus: string; username: string }) => acc.betStatus === 'success').map((acc: { betStatus: string; username: string }) => acc.username).join(', ')}>
-                          {item.accountsUsed.filter((acc: { betStatus: string; username: string }) => acc.betStatus === 'success').map((acc: { betStatus: string; username: string }) => acc.username).join(', ')}
+                        <div className={`font-medium text-sm ${
+                          'isWinning' in item && item.isWinning
+                            ? 'px-1.5 py-0.5 rounded border bg-yellow-200 text-yellow-900 border-yellow-400 font-bold transition-colors duration-200'
+                            : 'text-blue-600'
+                        }`}>
+                          {(item as AccountDetailData).accountUsername}
                         </div>
                       </div>
                     </td>
@@ -847,7 +1022,7 @@ const BettingStatsPage: React.FC = () => {
                       {item.result?.isChecked ? (
                         isAccountView ? (
                           // Hiển thị kết quả cho số cụ thể
-                          item.isWinning ? (
+                          ('isWinning' in item && item.isWinning) ? (
                             <div>
                               <div className="text-green-600 font-bold">
                                 +{formatCurrency(item.winAmount)}
@@ -857,7 +1032,7 @@ const BettingStatsPage: React.FC = () => {
                           ) : (
                             <div>
                               <div className="text-red-600 font-bold">
-                                {formatCurrency(item.winAmount || -item.stakeAmount)}
+                                {formatCurrency(('winAmount' in item ? item.winAmount : 0) || -('stakeAmount' in item ? item.stakeAmount : item.totalStake))}
                               </div>
                               <div className="text-xs text-red-500">Thua</div>
                             </div>

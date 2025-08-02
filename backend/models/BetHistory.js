@@ -25,7 +25,7 @@ const betHistorySchema = new mongoose.Schema({
   },
   region: {
     type: String,
-    enum: ['south', 'central', 'north'],
+    enum: ['south', 'central', 'north', 'north1', 'north2'],
     required: true
   },
   stations: [{

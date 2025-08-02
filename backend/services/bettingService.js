@@ -428,7 +428,7 @@ class BettingService {
     try {
       const { runningAccountsCount, websiteType, distributionType, numbers, numbersArray  } = bettingData;
 
-      // Lấy TẤT CẢ tài khoản active (không giới hạn bởi runningAccountsCount)
+      // Lấy TẤT CẢ tài khoản active để có thể retry khi cần
       const allActiveAccounts = await Account.find({
         userId: userId,
         websiteType: websiteType,
@@ -442,7 +442,7 @@ class BettingService {
         };
       }
 
-      // Lấy danh sách tài khoản theo runningAccountsCount
+      // CHỈ lấy số lượng tài khoản theo runningAccountsCount để bắt đầu
       const initialAccounts = allActiveAccounts.slice(0, runningAccountsCount);
       const originalNumbers = numbersArray || numbers;
 
@@ -452,20 +452,20 @@ class BettingService {
       if (needsRetryLogic) {
         // LOGIC RETRY CHO 'equal' VÀ 'random' - Mỗi tài khoản đánh số khác nhau
         let remainingNumbers = [...originalNumbers]; // Số còn lại cần đánh
-        let availableAccounts = [...initialAccounts]; // Tài khoản còn khả dụng
+        let availableAccounts = [...initialAccounts]; // Bắt đầu với số tài khoản được chọn
         let usedAccountIds = new Set(); // Theo dõi tài khoản đã sử dụng
         let allResults = []; // Tất cả kết quả thành công
         let retryCount = 0;
         const maxRetries = 5; // Tối đa 5 lần retry
 
-        console.log(`🎯 Bắt đầu betting (${distributionType}): ${remainingNumbers.length} số, ${availableAccounts.length} tài khoản ban đầu`);
+        console.log(`🎯 Bắt đầu betting (${distributionType}): ${remainingNumbers.length} số, ${initialAccounts.length} tài khoản được chọn`);
 
         // Vòng lặp retry
         while (remainingNumbers.length > 0 && retryCount < maxRetries) {
           retryCount++;
           console.log(`\n🔄 Lần ${retryCount}: ${remainingNumbers.length} số còn lại, ${availableAccounts.length} tài khoản khả dụng`);
 
-          // Nếu không còn tài khoản khả dụng, thử lấy thêm từ danh sách tổng
+          // Nếu không còn tài khoản khả dụng, lấy thêm từ danh sách tổng (chưa sử dụng)
           if (availableAccounts.length === 0) {
             const additionalAccounts = allActiveAccounts.filter(acc => 
               !usedAccountIds.has(acc._id.toString())
@@ -476,8 +476,10 @@ class BettingService {
               break;
             }
             
-            availableAccounts = additionalAccounts;
-            console.log(`🔄 Lấy thêm ${additionalAccounts.length} tài khoản từ danh sách tổng`);
+            // Lấy thêm tài khoản (tối đa bằng số lượng ban đầu được chọn)
+            const additionalCount = Math.min(additionalAccounts.length, runningAccountsCount);
+            availableAccounts = additionalAccounts.slice(0, additionalCount);
+            console.log(`🔄 Lấy thêm ${availableAccounts.length} tài khoản từ danh sách tổng`);
           }
 
           // Phân phối số cho tài khoản khả dụng
@@ -550,8 +552,8 @@ class BettingService {
           // Thêm kết quả thành công vào danh sách tổng
           allResults.push(...successfulResults);
 
-          // Đánh dấu tài khoản đã sử dụng (cả thành công và thất bại)
-          roundResults.forEach(result => {
+          // CHỈ đánh dấu tài khoản THẤT BẠI là không khả dụng
+          failedResults.forEach(result => {
             if (result.accountId) {
               usedAccountIds.add(result.accountId.toString());
             }
@@ -566,7 +568,7 @@ class BettingService {
           remainingNumbers = remainingNumbers.filter(num => !successfulNumbers.has(num));
           console.log(`📊 Đã đánh thành công ${successfulNumbers.size} số, còn lại ${remainingNumbers.length} số`);
 
-          // Cập nhật danh sách tài khoản khả dụng (loại bỏ tài khoản đã sử dụng)
+          // Cập nhật danh sách tài khoản khả dụng (chỉ loại bỏ tài khoản thất bại)
           availableAccounts = availableAccounts.filter(account => 
             !usedAccountIds.has(account._id.toString())
           );

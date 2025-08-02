@@ -10,6 +10,8 @@ class ResultCheckService {
     // Thời gian kiểm tra kết quả cho từng miền
     this.checkTimes = {
       north: { hour: 18, minute: 30 }, // Miền Bắc: sau 18h30
+      north1: { hour: 18, minute: 30 }, // Thêm north1
+      north2: { hour: 18, minute: 30 }, // Thêm north2
       central: { hour: 17, minute: 30 }, // Miền Trung: sau 17h30  
       south: { hour: 16, minute: 30 } // Miền Nam: sau 16h30
     };
@@ -510,16 +512,25 @@ class ResultCheckService {
         winningNumbersByChannel[channel] = [...new Set(winningNumbersByChannel[channel])];
       });
 
+      // Kiểm tra xem có account nào có status PENDING (từ ACCEPTED) không
+      const hasAnyPendingStatus = accountResults.some(account => account.status === 'PENDING');
+
       // Xác định trạng thái tổng thể
       let overallStatus = 'LOSS';
-      if (hasAnyWin && totalWinLoss > 0) {
+      if (hasAnyPendingStatus) {
+        // Nếu có bất kỳ account nào có status PENDING (từ ACCEPTED), không đánh dấu là đã kiểm tra
+        overallStatus = 'PENDING';
+      } else if (hasAnyWin && totalWinLoss > 0) {
         overallStatus = 'WIN';
       } else if (totalWinLoss === 0) {
         overallStatus = 'DRAW';
       }
 
+      // Chỉ cập nhật isChecked = true khi không có status PENDING
+      const shouldMarkAsChecked = !hasAnyPendingStatus;
+
       // Cập nhật kết quả vào database
-      bet.result.isChecked = true;
+      bet.result.isChecked = shouldMarkAsChecked;
       bet.result.checkedAt = new Date();
       bet.result.status = overallStatus;
       bet.result.totalWinAmount = totalWinLoss;
@@ -681,9 +692,15 @@ class ResultCheckService {
         winningNumbersByChannel[channel] = [...new Set(winningNumbersByChannel[channel])];
       });
 
+      // Kiểm tra xem có record nào có status ACCEPTED không
+      const hasAcceptedStatus = matchingRecords.some(record => record.status === 'ACCEPTED');
+
       // Xác định trạng thái của account này
       let status = 'LOSS';
-      if (hasWin && totalWinLoss > 0) {
+      if (hasAcceptedStatus) {
+        // Nếu có bất kỳ record nào có status ACCEPTED, coi như chưa có kết quả
+        status = 'PENDING';
+      } else if (hasWin && totalWinLoss > 0) {
         status = 'WIN';
       } else if (totalWinLoss === 0) {
         status = 'DRAW';

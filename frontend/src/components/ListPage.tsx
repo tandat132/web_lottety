@@ -8,12 +8,6 @@ interface CheckAccountResult {
   status: 'success' | 'failed' | 'proxy_error';
 }
 
-interface CheckMultipleAccountsResponse {
-  success: boolean;
-  message: string;
-  results: CheckAccountResult[];
-}
-
 const ListPage: React.FC = () => {
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -52,10 +46,12 @@ const ListPage: React.FC = () => {
   const [confirmDialog, setConfirmDialog] = useState<{show: boolean, title: string, message: string, onConfirm: () => void} | null>(null);
   const [sortField, setSortField] = useState<string | null>(null);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
-  const [selectedWebsiteType, setSelectedWebsiteType] = useState<'sgd666' | 'one789'>('sgd666');
+  const [selectedWebsiteType, setSelectedWebsiteType] = useState<'sgd666' | 'one789'>('one789');
 
   const [checkingAll, setCheckingAll] = useState(false);
-  
+  // Thêm state cho việc kiểm tra tài khoản đơn lẻ
+  const [checkingAccounts, setCheckingAccounts] = useState<Set<string>>(new Set());
+
   // Hiển thị confirm dialog
   const showConfirmDialog = (title: string, message: string, onConfirm: () => void) => {
     setConfirmDialog({ show: true, title, message, onConfirm });
@@ -104,47 +100,112 @@ const ListPage: React.FC = () => {
       return;
     }
 
+    setCheckingAll(true);
+    
     try {
-      setCheckingAll(true);
-      
       const accountIds = filteredAccounts.map(acc => acc._id);
-      const result: CheckMultipleAccountsResponse = await accountAPI.checkMultipleAccounts(accountIds);
-      if (result.success) {
-        // Cập nhật thông tin tài khoản trong state
-        setAccounts(prev => prev.map(acc => {
-          const updatedAccount = result.results.find((r: CheckAccountResult) => r.accountId === acc._id);
-          if (updatedAccount) {
-            let newStatus: 'active' | 'inactive' | 'proxy_error' = 'active';
-            if (updatedAccount.status === 'success') {
-              newStatus = 'active';
-            } else if (updatedAccount.status === 'proxy_error') {
-              newStatus = 'proxy_error';
-            } else {
-              newStatus = 'inactive';
+      const result = await accountAPI.checkMultipleAccounts(accountIds);
+      
+      if (result?.success && result?.results) {
+        // Cập nhật state một cách an toàn
+        setAccounts(prevAccounts => 
+          prevAccounts.map(acc => {
+            const updatedAccount = result.results.find((r: CheckAccountResult) => r.accountId === acc._id);
+            if (updatedAccount) {
+              return {
+                ...acc,
+                points: updatedAccount.points || acc.points,
+                status: updatedAccount.status === 'success' ? 'active' : 
+                       updatedAccount.status === 'proxy_error' ? 'proxy_error' : 'inactive'
+              };
             }
-            
-            return {
-              ...acc,
-              points: updatedAccount.points,
-              status: newStatus
-            };
-          }
-          return acc;
-        }));
+            return acc;
+          })
+        );
         
         showNotification('success', `✅ ${result.message}`);
       } else {
-        showNotification('error', `❌ Kiểm tra thất bại: ${result.message}`);
+        showNotification('error', `❌ Kiểm tra thất bại: ${result?.message || 'Lỗi không xác định'}`);
       }
-    } catch (error: unknown) {
-      console.error('Check all accounts error:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Không xác định';
-      showNotification('error', `❌ Lỗi kiểm tra tài khoản: ${errorMessage}`);
+    } catch (error) {
+      console.error('Check accounts error:', error);
+      showNotification('error', `❌ Lỗi kiểm tra tài khoản: ${error instanceof Error ? error.message : 'Lỗi không xác định'}`);
     } finally {
       setCheckingAll(false);
     }
   };
 
+  // Hàm kiểm tra tài khoản đơn lẻ
+  const handleCheckSingleAccount = async (accountId: string) => {
+    setCheckingAccounts(prev => new Set(prev).add(accountId));
+    
+    try {
+      const result = await accountAPI.checkMultipleAccounts([accountId]);
+      
+      if (result?.success && result?.results && result.results.length > 0) {
+        const updatedAccount = result.results[0];
+        
+        // Cập nhật state
+        setAccounts(prevAccounts => 
+          prevAccounts.map(acc => {
+            if (acc._id === accountId) {
+              return {
+                ...acc,
+                points: updatedAccount.points || acc.points,
+                status: updatedAccount.status === 'success' ? 'active' : 
+                       updatedAccount.status === 'proxy_error' ? 'proxy_error' : 'inactive'
+              };
+            }
+            return acc;
+          })
+        );
+        
+        showNotification('success', '✅ Đã kiểm tra tài khoản thành công!');
+      } else {
+        showNotification('error', `❌ Kiểm tra thất bại: ${result?.message || 'Lỗi không xác định'}`);
+      }
+    } catch (error) {
+      console.error('Check single account error:', error);
+      showNotification('error', `❌ Lỗi kiểm tra tài khoản: ${error instanceof Error ? error.message : 'Lỗi không xác định'}`);
+    } finally {
+      setCheckingAccounts(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(accountId);
+        return newSet;
+      });
+    }
+  };
+
+  // Hàm bật/tắt tài khoản
+  const handleToggleAccount = async (account: Account) => {
+    const newStatus = account.status === 'active' ? 'inactive' : 'active';
+    
+    try {
+      // Nếu đang bật tài khoản, kiểm tra trước
+      if (newStatus === 'active') {
+        await handleCheckSingleAccount(account._id);
+      } else {
+        // Nếu đang tắt, chỉ cập nhật trạng thái
+        await accountAPI.update(account._id, {
+          ...account,
+          status: newStatus
+        });
+        
+        // Cập nhật state local
+        setAccounts(prevAccounts => 
+          prevAccounts.map(acc => 
+            acc._id === account._id ? { ...acc, status: newStatus } : acc
+          )
+        );
+        
+        showNotification('success', '✅ Đã tắt tài khoản thành công!');
+      }
+    } catch (error) {
+      console.error('Toggle account error:', error);
+      showNotification('error', '❌ Không thể thay đổi trạng thái tài khoản');
+    }
+  };
+  
   // Thêm account mới
   const handleAddAccount = async () => {
     try {
@@ -242,17 +303,23 @@ const ListPage: React.FC = () => {
         return;
       }
       
-      // Thêm từng tài khoản
+      // Thêm từng tài khoản và lưu ID của các tài khoản mới
+      const addedAccountIds = [];
       for (const accountData of validAccounts) {
-        await accountAPI.create(`${accountData.username}:${accountData.password}:${accountData.proxy || ''}`, selectedWebsiteType);
+        const newAccount = await accountAPI.create(`${accountData.username}:${accountData.password}:${accountData.proxy || ''}`, selectedWebsiteType);
+        if (newAccount && newAccount._id) {
+          addedAccountIds.push(newAccount._id);
+        }
       }
       
       setNewAccountData('');
       setSelectedWebsiteType('sgd666'); // Reset về mặc định
       setShowAddModal(false);
-      loadAccounts();
       
-      // Thông báo kết quả
+      // Tải lại danh sách tài khoản
+      await loadAccounts();
+      
+      // Thông báo kết quả thêm tài khoản
       let message = `✅ Đã thêm thành công ${validAccounts.length} tài khoản!`;
       if (duplicateUsernames.length > 0) {
         message += ` (Bỏ qua ${duplicateUsernames.length} tài khoản trùng lặp)`;
@@ -261,6 +328,40 @@ const ListPage: React.FC = () => {
         message += ` (Bỏ qua ${invalidProxies.length} proxy không hợp lệ)`;
       }
       showNotification('success', message);
+      
+      // Tự động kiểm tra các tài khoản vừa thêm
+      if (addedAccountIds.length > 0) {
+        try {
+          showNotification('info', '🔍 Đang kiểm tra tài khoản vừa thêm...');
+          
+          const checkResult = await accountAPI.checkMultipleAccounts(addedAccountIds);
+          
+          if (checkResult?.success && checkResult?.results) {
+            // Cập nhật state với kết quả kiểm tra
+            setAccounts(prevAccounts => 
+              prevAccounts.map(acc => {
+                const updatedAccount = checkResult.results.find((r: CheckAccountResult) => r.accountId === acc._id);
+                if (updatedAccount) {
+                  return {
+                    ...acc,
+                    points: updatedAccount.points || acc.points,
+                    status: updatedAccount.status === 'success' ? 'active' : 
+                           updatedAccount.status === 'proxy_error' ? 'proxy_error' : 'inactive'
+                  };
+                }
+                return acc;
+              })
+            );
+            
+            showNotification('success', `✅ Đã kiểm tra xong ${addedAccountIds.length} tài khoản mới!`);
+          } else {
+            showNotification('error', `❌ Kiểm tra tài khoản thất bại: ${checkResult?.message || 'Lỗi không xác định'}`);
+          }
+        } catch (checkError) {
+          console.error('Check new accounts error:', checkError);
+          showNotification('error', `❌ Lỗi kiểm tra tài khoản mới: ${checkError instanceof Error ? checkError.message : 'Lỗi không xác định'}`);
+        }
+      }
     } catch (error) {
       console.error('Error adding accounts:', error);
       showNotification('error', '❌ Có lỗi xảy ra khi thêm tài khoản');
@@ -694,22 +795,57 @@ const ListPage: React.FC = () => {
                       : 'Không hoạt động'}
                   </span>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                  <button 
-                    onClick={() => {
-                      setEditingAccount(account);
-                      setShowEditModal(true);
-                    }}
-                    className="text-blue-600 hover:text-blue-900"
-                  >
-                    Sửa
-                  </button>
-                  <button 
-                    onClick={() => handleDeleteAccount(account._id)}
-                    className="text-red-600 hover:text-red-900"
-                  >
-                    Xóa
-                  </button>
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                  <div className="flex items-center gap-2">
+                    {/* Nút Bật/Tắt */}
+                    <button
+                      onClick={() => handleToggleAccount(account)}
+                      disabled={checkingAccounts.has(account._id)}
+                      className={`inline-flex items-center justify-center w-8 h-8 rounded-lg text-xs font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
+                        account.status === 'active'
+                          ? 'bg-orange-100 text-orange-700 hover:bg-orange-200 border border-orange-300'
+                          : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200 border border-emerald-300'
+                      }`}
+                      title={account.status === 'active' ? 'Tắt tài khoản' : 'Bật tài khoản (sẽ kiểm tra)'}
+                    >
+                      {checkingAccounts.has(account._id) ? (
+                        <div className="animate-spin rounded-full h-3 w-3 border-2 border-current border-t-transparent"></div>
+                      ) : account.status === 'active' ? (
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5.636 5.636a9 9 0 1012.728 0M12 3v9" />
+                        </svg>
+                      ) : (
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z" />
+                        </svg>
+                      )}
+                    </button>
+
+                    {/* Nút Sửa */}
+                    <button 
+                      onClick={() => {
+                        setEditingAccount(account);
+                        setShowEditModal(true);
+                      }}
+                      className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-xs font-medium bg-blue-100 text-blue-700 hover:bg-blue-200 border border-blue-300 transition-all duration-200"
+                      title="Sửa tài khoản"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+                      </svg>
+                    </button>
+
+                    {/* Nút Xóa */}
+                    <button 
+                      onClick={() => handleDeleteAccount(account._id)}
+                      className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-xs font-medium bg-rose-100 text-rose-700 hover:bg-rose-200 border border-rose-300 transition-all duration-200"
+                      title="Xóa tài khoản"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                      </svg>
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}

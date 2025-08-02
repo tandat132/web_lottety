@@ -356,6 +356,61 @@ const Dashboard: React.FC = () => {
     }
   }, [form.websiteType, form.region]);
 
+  // Hàm tự động format số (thêm số 0 phía trước nếu cần) - chỉ dùng khi submit
+  const formatNumbers = (input: string): string => {
+    if (!input.trim()) {
+      return '';
+    }
+    
+    // Tách các số bằng dấu cách, phẩy hoặc xuống dòng
+    const numbers = input.split(/[,\s\n]+/).filter(n => n.trim().length > 0);
+    
+    const formattedNumbers = numbers.map(num => {
+      const cleanNum = num.trim();
+      
+      // Chỉ xử lý nếu là số hợp lệ (chỉ chứa chữ số)
+      if (!/^\d+$/.test(cleanNum)) {
+        return cleanNum; // Giữ nguyên nếu không phải số thuần
+      }
+      
+      const numValue = parseInt(cleanNum);
+      
+      // Kiểm tra giá trị hợp lệ trước khi format
+      if (isNaN(numValue) || numValue < 0) {
+        return cleanNum; // Giữ nguyên nếu không hợp lệ
+      }
+      
+      if (form.websiteType === 'sgd666') {
+        // SGD666: 2 chữ số (00-99)
+        if (numValue <= 99) {
+          return numValue.toString().padStart(2, '0');
+        }
+      } else if (form.websiteType === 'one789') {
+        const is3D = form.betType.includes('3d');
+        if (is3D) {
+          // ONE789 3D: 3 chữ số (000-999)
+          if (numValue <= 999) {
+            return numValue.toString().padStart(3, '0');
+          }
+        } else {
+          // ONE789 2D: 2 chữ số (00-99)
+          if (numValue <= 99) {
+            return numValue.toString().padStart(2, '0');
+          }
+        }
+      } else {
+        // Mặc định: 2 chữ số (00-99)
+        if (numValue <= 99) {
+          return numValue.toString().padStart(2, '0');
+        }
+      }
+      
+      return cleanNum; // Giữ nguyên nếu vượt quá giới hạn
+    });
+    
+    return formattedNumbers.join(' ');
+  };
+
   // Hàm validate số theo loại website và bet type
   const validateNumbers = (numbers: string): boolean => {
     const cleanNumbers = numbers.replace(/[,\s]+/g, ' ').trim();
@@ -366,24 +421,31 @@ const Dashboard: React.FC = () => {
     }
     
     if (form.websiteType === 'sgd666') {
-      // SGD666: cho phép số lượng không giới hạn, chỉ nhận 2 chữ số (00-99)
+      // SGD666: cho phép số lượng không giới hạn, chấp nhận 1-2 chữ số (0-99)
       return numberArray.every(num => {
-        return /^\d{2}$/.test(num) && parseInt(num) >= 0 && parseInt(num) <= 99;
+        const numValue = parseInt(num);
+        return /^\d{1,2}$/.test(num) && !isNaN(numValue) && numValue >= 0 && numValue <= 99;
       });
     } else if (form.websiteType === 'one789') {
-      // ONE789: 2D = 2 chữ số, 3D = 3 chữ số
+      // ONE789: 2D = 1-2 chữ số, 3D = 1-3 chữ số
       const is3D = form.betType.includes('3d');
-      const digitPattern = is3D ? /^\d{3}$/ : /^\d{2}$/;
-      const maxValue = is3D ? 999 : 99;
-      
-      return numberArray.every(num => {
-        return digitPattern.test(num) && parseInt(num) >= 0 && parseInt(num) <= maxValue;
-      });
+      if (is3D) {
+        return numberArray.every(num => {
+          const numValue = parseInt(num);
+          return /^\d{1,3}$/.test(num) && !isNaN(numValue) && numValue >= 0 && numValue <= 999;
+        });
+      } else {
+        return numberArray.every(num => {
+          const numValue = parseInt(num);
+          return /^\d{1,2}$/.test(num) && !isNaN(numValue) && numValue >= 0 && numValue <= 99;
+        });
+      }
     }
     
-    // Mặc định: chỉ nhận 2 chữ số (00-99)
+    // Mặc định: chấp nhận 1-2 chữ số (0-99)
     return numberArray.every(num => {
-      return /^\d{2}$/.test(num) && parseInt(num) >= 0 && parseInt(num) <= 99;
+      const numValue = parseInt(num);
+      return /^\d{1,2}$/.test(num) && !isNaN(numValue) && numValue >= 0 && numValue <= 99;
     });
   };
 
@@ -396,31 +458,31 @@ const Dashboard: React.FC = () => {
   // Hàm lấy placeholder cho input số
   const getNumberPlaceholder = (): string => {
     if (form.websiteType === 'sgd666') {
-      return 'Nhập các số 2 chữ số (00-99). VD: 12 34 56 78';
+      return 'Nhập các số 0-99. VD: 4 12 34';
     } else if (form.websiteType === 'one789') {
       const is3D = form.betType.includes('3d');
       if (is3D) {
-        return 'Nhập các số 3 chữ số (000-999). VD: 123 456';
+        return 'Nhập các số 0-999. VD: 4 123 456';
       } else {
-        return 'Nhập các số 2 chữ số (00-99). VD: 12 34';
+        return 'Nhập các số 0-99. VD: 4 12 34';
       }
     }
-    return 'Nhập các số 2 chữ số, cách nhau bởi dấu cách hoặc dấu phẩy. VD: 12 34 56, 78 90';
+    return 'Nhập các số 0-99, cách nhau bởi dấu cách hoặc dấu phẩy. VD: 4 12 34, 56 78';
   };
-
+  
   // Hàm lấy mô tả định dạng số
   const getNumberFormatDescription = (): string => {
     if (form.websiteType === 'sgd666') {
-      return 'Định dạng: Các số 2 chữ số (00-99)';
+      return 'Định dạng: Các số 0-99';
     } else if (form.websiteType === 'one789') {
       const is3D = form.betType.includes('3d');
       if (is3D) {
-        return 'Định dạng: Các số 3 chữ số (000-999)';
+        return 'Định dạng: Các số 0-999';
       } else {
-        return 'Định dạng: Các số 2 chữ số (00-99)';
+        return 'Định dạng: Các số 0-99';
       }
     }
-    return 'Định dạng: Các số 2 chữ số (00-99)';
+    return 'Định dạng: Các số 0-99';
   };
 
   // Thêm hàm scroll đến element có lỗi
@@ -452,12 +514,6 @@ const Dashboard: React.FC = () => {
         return;
       }
       
-      // if (form.points > 100) {
-      //   setNotification({ type: 'error', message: '❌ Điểm cần đánh không được vượt quá 100!' });
-      //   scrollToError('points-input');
-      //   return;
-      // }
-      
       if (!form.numbers.trim()) {
         setNotification({ type: 'error', message: '❌ Vui lòng nhập các đầu số!' });
         scrollToError('numbers-input');
@@ -467,12 +523,12 @@ const Dashboard: React.FC = () => {
       if (!validateNumbers(form.numbers)) {
         let errorMessage = '❌ Định dạng số không hợp lệ!';
         if (form.websiteType === 'sgd666') {
-          errorMessage += ' SGD666 chỉ cho phép nhập các số 2 chữ số (00-99).';
+          errorMessage += ' SGD666 chỉ cho phép nhập các số từ 0-99.';
         } else if (form.websiteType === 'one789') {
           const is3D = form.betType.includes('3d');
           errorMessage += is3D 
-            ? ' Vui lòng nhập các số 3 chữ số (000-999).'
-            : ' Vui lòng nhập các số 2 chữ số (00-99).';
+            ? ' Vui lòng nhập các số từ 0-999.'
+            : ' Vui lòng nhập các số từ 0-99.';
         }
         setNotification({ type: 'error', message: errorMessage });
         scrollToError('numbers-input');
@@ -490,12 +546,16 @@ const Dashboard: React.FC = () => {
         return;
       }
       
+      // Format các số trước khi gửi
+      const formattedNumbers = formatNumbers(form.numbers);
+      
       // Chuẩn bị dữ liệu gửi đến API
       const submitData = {
         ...form,
+        numbers: formattedNumbers, // Sử dụng số đã được format
         runningAccountsCount,
         totalAmount: calculateTotalStake(),
-        numbersArray: form.numbers.replace(/[,\s]+/g, ' ').trim().split(' ').filter(n => n.length > 0),
+        numbersArray: formattedNumbers.replace(/[,\s]+/g, ' ').trim().split(' ').filter(n => n.length > 0),
         timestamp: new Date().toISOString()
       };
       
